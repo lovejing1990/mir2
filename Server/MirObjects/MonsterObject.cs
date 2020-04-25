@@ -248,7 +248,41 @@ namespace Server.MirObjects
         }
 
         public override int CurrentMapIndex { get; set; }
-        public override Point CurrentLocation { get; set; }
+
+        public Point CurLocation;
+
+        public override Point CurrentLocation
+        {
+            get { return CurLocation; }
+            set
+            {
+                CurLocation = value;
+                InformObservers();
+            }
+        }
+
+        //public bool ObserverInform = true;
+        public void InformObservers()
+        {
+            //if (!ObserverInform) return;
+            if (CurrentObservers.Count == 0) return;
+
+            for (int i = CurrentObservers.Count() - 1; i >= 0; i--)
+            {
+                if (CurrentObservers[i] != null)
+                {
+                    if (!CurrentObservers[i].LockedProcess())
+                    {
+                        CurrentObservers.Remove(CurrentObservers[i]);
+                    }
+                }
+                else
+                {
+                    CurrentObservers.Remove(CurrentObservers[i]);
+                }
+
+            }
+        }
         public override sealed MirDirection Direction { get; set; }
         public override ushort Level
         {
@@ -641,6 +675,9 @@ namespace Server.MirObjects
             Dead = true;
 
             DeadTime = Envir.Time + DeadDelay;
+
+            for (int i = CurrentObservers.Count - 1; i >= 0; i--)
+                CurrentObservers[i].Died();
 
             Broadcast(new S.ObjectDied { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation });
 
@@ -2564,7 +2601,7 @@ namespace Server.MirObjects
                             for (int i = 0; i < cell.Objects.Count; i++)
                             {
                                 MapObject ob = cell.Objects[i];
-                                if (ob.Race != ObjectType.Player) continue;
+                                if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Observer) continue;
                                 ob.Add(this);
                             }
                         }
@@ -2589,7 +2626,7 @@ namespace Server.MirObjects
                             for (int i = 0; i < cell.Objects.Count; i++)
                             {
                                 MapObject ob = cell.Objects[i];
-                                if (ob.Race != ObjectType.Player) continue;
+                                if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Observer) continue;
                                 ob.Add(this);
                             }
                         }
@@ -2613,7 +2650,7 @@ namespace Server.MirObjects
                             for (int i = 0; i < cell.Objects.Count; i++)
                             {
                                 MapObject ob = cell.Objects[i];
-                                if (ob.Race != ObjectType.Player) continue;
+                                if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Observer) continue;
                                 ob.Add(this);
                             }
                         }
@@ -2637,7 +2674,7 @@ namespace Server.MirObjects
                             for (int i = 0; i < cell.Objects.Count; i++)
                             {
                                 MapObject ob = cell.Objects[i];
-                                if (ob.Race != ObjectType.Player) continue;
+                                if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Observer) continue;
                                 ob.Add(this);
                             }
                         }
@@ -2662,7 +2699,7 @@ namespace Server.MirObjects
                             for (int i = 0; i < cell.Objects.Count; i++)
                             {
                                 MapObject ob = cell.Objects[i];
-                                if (ob.Race != ObjectType.Player) continue;
+                                if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Observer) continue;
                                 ob.Add(this);
                             }
                         }
@@ -2686,7 +2723,7 @@ namespace Server.MirObjects
                             for (int i = 0; i < cell.Objects.Count; i++)
                             {
                                 MapObject ob = cell.Objects[i];
-                                if (ob.Race != ObjectType.Player) continue;
+                                if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Observer) continue;
                                 ob.Add(this);
                             }
                         }
@@ -2711,7 +2748,7 @@ namespace Server.MirObjects
                             for (int i = 0; i < cell.Objects.Count; i++)
                             {
                                 MapObject ob = cell.Objects[i];
-                                if (ob.Race != ObjectType.Player) continue;
+                                if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Observer) continue;
                                 ob.Add(this);
                             }
                         }
@@ -2736,7 +2773,7 @@ namespace Server.MirObjects
                             for (int i = 0; i < cell.Objects.Count; i++)
                             {
                                 MapObject ob = cell.Objects[i];
-                                if (ob.Race != ObjectType.Player) continue;
+                                if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Observer) continue;
                                 ob.Add(this);
                             }
                         }
@@ -2760,7 +2797,7 @@ namespace Server.MirObjects
                             for (int i = 0; i < cell.Objects.Count; i++)
                             {
                                 MapObject ob = cell.Objects[i];
-                                if (ob.Race != ObjectType.Player) continue;
+                                if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Observer) continue;
                                 ob.Add(this);
                             }
                         }
@@ -2785,7 +2822,7 @@ namespace Server.MirObjects
                             for (int i = 0; i < cell.Objects.Count; i++)
                             {
                                 MapObject ob = cell.Objects[i];
-                                if (ob.Race != ObjectType.Player) continue;
+                                if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Observer) continue;
                                 ob.Add(this);
                             }
                         }
@@ -2810,7 +2847,7 @@ namespace Server.MirObjects
                             for (int i = 0; i < cell.Objects.Count; i++)
                             {
                                 MapObject ob = cell.Objects[i];
-                                if (ob.Race != ObjectType.Player) continue;
+                                if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Observer) continue;
                                 ob.Add(this);
                             }
                         }
@@ -2834,7 +2871,7 @@ namespace Server.MirObjects
                             for (int i = 0; i < cell.Objects.Count; i++)
                             {
                                 MapObject ob = cell.Objects[i];
-                                if (ob.Race != ObjectType.Player) continue;
+                                if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Observer) continue;
                                 ob.Add(this);
                             }
                         }
@@ -2849,11 +2886,25 @@ namespace Server.MirObjects
             SendHealth(player);
         }
 
+        public override void Add(ObserverObject observer)
+        {
+            observer.Enqueue(GetInfo());
+            SendHealth(observer);
+        }
+
         public override void SendHealth(PlayerObject player)
         {
             if (!player.IsMember(Master) && !(player.IsMember(EXPOwner) && AutoRev) && Envir.Time > RevTime) return;
             byte time = Math.Min(byte.MaxValue, (byte) Math.Max(5, (RevTime - Envir.Time)/1000));
             player.Enqueue(new S.ObjectHealth { ObjectID = ObjectID, Percent = PercentHealth, Expire = time });
+        }
+
+        public override void SendHealth(ObserverObject observer)
+        {
+            if (observer.LockedPlayer == null) return;
+            if (!observer.LockedPlayer.IsMember(Master) && !(observer.LockedPlayer.IsMember(EXPOwner) && AutoRev) && Envir.Time > RevTime) return;
+            byte time = Math.Min(byte.MaxValue, (byte)Math.Max(5, (RevTime - Envir.Time) / 1000));
+            observer.Enqueue(new S.ObjectHealth { ObjectID = ObjectID, Percent = PercentHealth, Expire = time });
         }
 
         public void PetExp(uint amount)

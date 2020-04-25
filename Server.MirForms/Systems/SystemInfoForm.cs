@@ -10,7 +10,7 @@ namespace Server
     {
         public Envir Envir => SMain.EditEnvir;
 
-        public bool FishingChanged = false, MailChanged = false, GoodsChanged = false, RefineChanged = false, MarriageChanged = false, MentorChanged = false, GemChanged = false, SpawnChanged = false;
+        public bool FishingChanged = false, MailChanged = false, GoodsChanged = false, RefineChanged = false, MarriageChanged = false, MentorChanged = false, GemChanged = false, SpawnChanged = false, ObserverChanged = false;
 
         public SystemInfoForm()
         {
@@ -32,6 +32,7 @@ namespace Server
             UpdateMarriage();
             UpdateMentor();
             UpdateGem();
+            UpdateObserve();
             UpdateSpawnTick();
         }
 
@@ -111,7 +112,11 @@ namespace Server
         {
             GemStatCheckBox.Checked = Settings.GemStatIndependent;
         }
-
+        private void UpdateObserve()
+        {
+            CB_AllowObserving.Checked = Settings.ObserveEnabled;
+            TB_ObserveExpBonus.Text = Settings.ObserveEXPBoost.ToString();
+        }
         private void UpdateSpawnTick()
         {
             txtSpawnTickDefault.Text = Envir.RespawnTick.BaseSpawnRate.ToString();
@@ -166,8 +171,12 @@ namespace Server
 
             if (GemChanged)
                 Settings.SaveGem();
+
             if (SpawnChanged)
                 Envir.SaveDB();
+
+            if (ObserverChanged)
+                Settings.SaveObserver();
         }
 
         #region Fishing
@@ -673,6 +682,30 @@ namespace Server
             ActiveControl.BackColor = SystemColors.Window;
             Settings.GoodsBuyBackTime = temp;
             GoodsChanged = true;
+        }
+
+        private void CB_AllowObserving_CheckedChanged(object sender, EventArgs e)
+        {
+            if (ActiveControl != sender) return;
+
+            Settings.ObserveEnabled = CB_AllowObserving.Checked;
+            ObserverChanged = true;
+        }
+
+        private void TB_ExpBonus_TextChanged(object sender, EventArgs e)
+        {
+            if (ActiveControl != sender) return;
+            byte temp;
+
+            if (!byte.TryParse(ActiveControl.Text, out temp))
+            {
+                ActiveControl.BackColor = Color.Red;
+                return;
+            }
+
+            ActiveControl.BackColor = SystemColors.Window;
+            Settings.ObserveEXPBoost = temp;
+            ObserverChanged = true;
         }
 
         private void GoodsBuyBackMaxStoredTextBox_TextChanged(object sender, EventArgs e)

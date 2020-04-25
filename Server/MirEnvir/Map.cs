@@ -36,6 +36,7 @@ namespace Server.MirEnvir
 
         public List<NPCObject> NPCs = new List<NPCObject>();
         public List<PlayerObject> Players = new List<PlayerObject>();
+        public List<ObserverObject> Observers = new List<ObserverObject>();
         public List<MapRespawn> Respawns = new List<MapRespawn>();
         public List<DelayedAction> ActionList = new List<DelayedAction>();
 
@@ -616,6 +617,7 @@ namespace Server.MirEnvir
         {
             return location.X >= 0 && location.X < Width && location.Y >= 0 && location.Y < Height && GetCell(location).Valid;
         }
+
         public bool ValidPoint(int x, int y)
         {
             return x >= 0 && x < Width && y >= 0 && y < Height && GetCell(x, y).Valid;
@@ -2189,6 +2191,9 @@ namespace Server.MirEnvir
             if (ob.Race == ObjectType.Merchant)
                 NPCs.Add((NPCObject)ob);
 
+            if (ob.Race == ObjectType.Observer)
+                Observers.Add((ObserverObject)ob);
+
             GetCell(ob.CurrentLocation).Add(ob);
         }
 
@@ -2196,6 +2201,7 @@ namespace Server.MirEnvir
         {
             if (ob.Race == ObjectType.Player) Players.Remove((PlayerObject)ob);
             if (ob.Race == ObjectType.Merchant) NPCs.Remove((NPCObject)ob);
+            if (ob.Race == ObjectType.Observer) Observers.Remove((ObserverObject)ob);
 
             GetCell(ob.CurrentLocation).Remove(ob);
         }
@@ -2249,6 +2255,14 @@ namespace Server.MirEnvir
                     player.Enqueue(p);
                     
             }
+
+            for (int i = Observers.Count - 1; i >= 0; i--)
+            {
+                ObserverObject observer = Observers[i];
+
+                if (Functions.InRange(location, observer.CurrentLocation, Globals.DataRange))
+                    observer.Enqueue(p);
+            }
         }
 
         public void BroadcastNPC(Packet p, Point location)
@@ -2261,7 +2275,14 @@ namespace Server.MirEnvir
 
                 if (Functions.InRange(location, player.CurrentLocation, Globals.DataRange))
                     player.Enqueue(p);
+            }
 
+            for (int i = Observers.Count - 1; i >= 0; i--)
+            {
+                ObserverObject observer = Observers[i];
+
+                if (Functions.InRange(location, observer.CurrentLocation, Globals.DataRange))
+                    observer.Enqueue(p);
             }
         }
 

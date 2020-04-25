@@ -364,6 +364,10 @@ namespace Server.MirObjects
         {
             throw new NotSupportedException();
         }
+        public override void SendHealth(ObserverObject observer)
+        {
+            throw new NotSupportedException();
+        }
         public override void Despawn()
         {
             base.Despawn();

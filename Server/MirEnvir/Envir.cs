@@ -54,7 +54,7 @@ namespace Server.MirEnvir
         public static object AccountLock = new object();
         public static object LoadLock = new object();
 
-        public const int Version = 79;
+        public const int Version = 80;
         public const int CustomVersion = 0;
         public static readonly string DatabasePath = Path.Combine(".", "Server.MirDB");
         public static readonly string AccountPath = Path.Combine(".", "Server.MirADB");
@@ -65,6 +65,8 @@ namespace Server.MirEnvir
 
         public static int LoadVersion;
         public static int LoadCustomVersion;
+
+        public static int ObserverNumber = 1;
 
         private readonly DateTime _startTime = DateTime.Now;
         public readonly Stopwatch Stopwatch = Stopwatch.StartNew();
@@ -129,6 +131,8 @@ namespace Server.MirEnvir
         public bool Saving = false;
         public LightSetting Lights;
         public LinkedList<MapObject> Objects = new LinkedList<MapObject>();
+
+        public List<ObserverObject> Observers = new List<ObserverObject>();
 
         public List<ConquestInfo> ConquestInfos = new List<ConquestInfo>();
         public List<ConquestObject> Conquests = new List<ConquestObject>();
@@ -845,6 +849,7 @@ namespace Server.MirEnvir
         public void Broadcast(Packet p)
         {
             for (var i = 0; i < Players.Count; i++) Players[i].Enqueue(p);
+            for (var i = 0; i < Observers.Count; i++) Observers[i].Enqueue(p);
         }
 
         public void RequiresBaseStatUpdate()
@@ -2832,6 +2837,15 @@ namespace Server.MirEnvir
 
             return null;
         }
+
+        public ObserverObject GetObserver(string name)
+        {
+            for (int i = 0; i < Observers.Count; i++)
+                if (String.Compare(Observers[i].Name, name, StringComparison.OrdinalIgnoreCase) == 0)
+                    return Observers[i];
+
+            return null;
+        }
         public PlayerObject GetPlayer(uint PlayerId)
         {
             for (var i = 0; i < Players.Count; i++)
@@ -3127,7 +3141,7 @@ namespace Server.MirEnvir
 
         public bool TryAddRank(List<Rank_Character_Info> Ranking, CharacterInfo info, byte type)
         {
-            var NewRank = new Rank_Character_Info() { Name = info.Name, Class = info.Class, Experience = info.Experience, level = info.Level, PlayerId = info.Index, info = info };
+            var NewRank = new Rank_Character_Info() { Name = info.Name, Class = info.Class, Experience = info.Experience, level = info.Level, PlayerId = info.Index, info = info, ShowObserve = info.AllowObserve & info.Player != null };
             var NewRankIndex = InsertRank(Ranking, NewRank);
             if (NewRankIndex == 0) return false;
             for (var i = NewRankIndex; i < Ranking.Count; i++ )

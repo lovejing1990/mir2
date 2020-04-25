@@ -49,6 +49,8 @@ namespace Server.MirObjects
         public abstract Point CurrentLocation { get; set; }
         public abstract MirDirection Direction { get; set; }
 
+        public List<ObserverObject> CurrentObservers = new List<ObserverObject>();
+
         public abstract ushort Level { get; set; }
 
         public abstract uint Health { get; }
@@ -108,6 +110,7 @@ namespace Server.MirObjects
         }
 
         private bool _observer;
+
         public bool Observer
         {
             get
@@ -266,6 +269,10 @@ namespace Server.MirObjects
         {
             player.Enqueue(new S.ObjectRemove {ObjectID = ObjectID});
         }
+        public virtual void Remove(ObserverObject observer)
+        {
+            observer.Enqueue(new S.ObjectRemove { ObjectID = ObjectID });
+        }
         public virtual void Add(PlayerObject player)
         {
             if (Race == ObjectType.Merchant)
@@ -286,6 +293,11 @@ namespace Server.MirObjects
             //{
             //    player.Enqueue(GetInfo());
             //}
+        }
+
+        public virtual void Add(ObserverObject observer)
+        {
+            observer.Enqueue(GetInfo());
         }
         public virtual void Remove(MonsterObject monster)
         {
@@ -386,10 +398,19 @@ namespace Server.MirObjects
             for (int i = CurrentMap.Players.Count - 1; i >= 0; i--)
             {
                 PlayerObject player = CurrentMap.Players[i];
-                if (player == this) continue;
+                if (player == this || player.Observer) continue;
 
                 if (Functions.InRange(CurrentLocation, player.CurrentLocation, Globals.DataRange))
                     player.Enqueue(p);
+            }
+
+            for (int i = CurrentMap.Observers.Count - 1; i >= 0; i--)
+            {
+                ObserverObject observer = CurrentMap.Observers[i];
+                if (observer == this) continue;
+
+                if (Functions.InRange(CurrentLocation, observer.CurrentLocation, Globals.DataRange))
+                    observer.Enqueue(p);
             }
         }
 
@@ -750,6 +771,8 @@ namespace Server.MirObjects
         }
 
         public abstract void SendHealth(PlayerObject player);
+        public abstract void SendHealth(ObserverObject observer);
+
 
         public bool InTrapRock
         {

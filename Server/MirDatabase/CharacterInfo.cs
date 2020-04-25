@@ -63,6 +63,7 @@ namespace Server.MirDatabase
         public PetMode PMode;
         public bool AllowGroup;
         public bool AllowTrade;
+        public bool AllowObserve;
 
         public int PKPoints;
 
@@ -367,6 +368,10 @@ namespace Server.MirDatabase
                     GSpurchases.Add(reader.ReadInt32(), reader.ReadInt32());
                 }
             }
+
+            if (Envir.LoadVersion > 80)
+                AllowObserve = reader.ReadBoolean();
+
         }
 
         public void Save(BinaryWriter writer)
@@ -456,6 +461,8 @@ namespace Server.MirDatabase
             writer.Write(GuildIndex);
 
             writer.Write(AllowTrade);
+
+            writer.Write(AllowObserve);
 
             writer.Write(CurrentQuests.Count);
             for (int i = 0; i < CurrentQuests.Count; i++)
