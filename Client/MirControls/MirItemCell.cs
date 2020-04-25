@@ -243,6 +243,11 @@ namespace Client.MirControls
                                 }
                             }
                         }
+                        else if (CMain.Alt && GameScene.Scene.NPCDropDialog.Visible && GridType == MirGridType.Inventory) // alt sell/repair
+                        {
+                            MoveItem(); // pickup item
+                            GameScene.Scene.NPCDropDialog.ItemCell.OnMouseClick(e); // emulate click to drop control
+                        }
                     }
                     else MoveItem();
                     break;
