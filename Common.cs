@@ -6893,6 +6893,9 @@ public class GameLanguage
         GameLanguage.ItemGradeRare = reader.ReadString("Language", "ItemGradeRare", GameLanguage.ItemGradeRare);
         GameLanguage.ItemGradeLegendary = reader.ReadString("Language", "ItemGradeLegendary", GameLanguage.ItemGradeLegendary);
         GameLanguage.ItemGradeMythical = reader.ReadString("Language", "ItemGradeMythical", GameLanguage.ItemGradeMythical);
+        GameLanguage.ItemGradeUncommon = reader.ReadString("Language", "ItemGradeUncommon", GameLanguage.ItemGradeUncommon);
+        GameLanguage.ItemGradeUnique = reader.ReadString("Language", "ItemGradeUnique", GameLanguage.ItemGradeUnique);
+        GameLanguage.ItemGradeSet = reader.ReadString("Language", "ItemGradeSet", GameLanguage.ItemGradeSet);
 
         GameLanguage.NoAccountID = reader.ReadString("Language", "NoAccountID", GameLanguage.NoAccountID);
         GameLanguage.IncorrectPasswordAccountID = reader.ReadString("Language", "IncorrectPasswordAccountID", GameLanguage.IncorrectPasswordAccountID);
@@ -7120,6 +7123,9 @@ public class GameLanguage
         reader.Write("Language", "ItemGradeRare", GameLanguage.ItemGradeRare);
         reader.Write("Language", "ItemGradeLegendary", GameLanguage.ItemGradeLegendary);
         reader.Write("Language", "ItemGradeMythical", GameLanguage.ItemGradeMythical);
+        reader.Write("Language", "ItemGradeUncommon", GameLanguage.ItemGradeUncommon);
+        reader.Write("Language", "ItemGradeUnique", GameLanguage.ItemGradeUnique);
+        reader.Write("Language", "ItemGradeSet", GameLanguage.ItemGradeSet);
 
         reader.Write("Language", "NoAccountID", GameLanguage.NoAccountID);
         reader.Write("Language", "IncorrectPasswordAccountID", GameLanguage.IncorrectPasswordAccountID);

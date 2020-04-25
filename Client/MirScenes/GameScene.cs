@@ -5865,8 +5865,14 @@ namespace Client.MirScenes
                     return Color.DarkOrange;
                 case ItemGrade.Mythical:
                     return Color.Plum;
+                case ItemGrade.Uncommon:
+                    return Color.LimeGreen;
+                case ItemGrade.Unique:
+                    return Color.Gold;
+                case ItemGrade.Set:
+                    return Color.Lime;
                 default:
-                    return Color.Yellow;
+                    return Color.NavajoWhite;
             }
         }
 
@@ -5933,7 +5939,6 @@ namespace Client.MirScenes
             {
                 AutoSize = true,
                 Font = new Font(Settings.FontName, 8f, FontStyle.Bold),
-                //ForeColour = Color.NavajoWhite,
                 ForeColour = GradeNameColor(HoverItem.Info.Grade),
                 Location = new Point(4, 4),
                 OutLine = true,
