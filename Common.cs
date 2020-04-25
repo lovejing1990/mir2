@@ -817,6 +817,7 @@ public enum ItemType : byte
 	Awakening = 35,
     Pets = 36,
     Transform = 37,
+    Charm = 38,
 }
 
 public enum MirGridType : byte
@@ -6619,6 +6620,7 @@ public class GameLanguage
                          ItemTypeAwakening = "Awakening",
                          ItemTypePets = "Pets",
                          ItemTypeTransform = "Transform",
+                         ItemTypeCharm = "Charm",
 
                          ItemGradeCommon = "Common",
                          ItemGradeRare = "Rare",
@@ -6892,6 +6894,7 @@ public class GameLanguage
         GameLanguage.ItemTypeAwakening = reader.ReadString("Language", "ItemTypeAwakening", GameLanguage.ItemTypeAwakening);
         GameLanguage.ItemTypePets = reader.ReadString("Language", "ItemTypePets", GameLanguage.ItemTypePets);
         GameLanguage.ItemTypeTransform = reader.ReadString("Language", "ItemTypeTransform", GameLanguage.ItemTypeTransform);
+        GameLanguage.ItemTypeCharm = reader.ReadString("Language", "ItemTypeCharm", GameLanguage.ItemTypeCharm);
 
         GameLanguage.ItemGradeCommon = reader.ReadString("Language", "ItemGradeCommon", GameLanguage.ItemGradeCommon);
         GameLanguage.ItemGradeRare = reader.ReadString("Language", "ItemGradeRare", GameLanguage.ItemGradeRare);
@@ -7122,6 +7125,7 @@ public class GameLanguage
         reader.Write("Language", "ItemTypeAwakening", GameLanguage.ItemTypeAwakening);
         reader.Write("Language", "ItemTypePets", GameLanguage.ItemTypePets);
         reader.Write("Language", "ItemTypeTransform", GameLanguage.ItemTypeTransform);
+        reader.Write("Language", "ItemTypeCharm", GameLanguage.ItemTypeCharm);
 
         reader.Write("Language", "ItemGradeCommon", GameLanguage.ItemGradeCommon);
         reader.Write("Language", "ItemGradeRare", GameLanguage.ItemGradeRare);

@@ -6136,6 +6136,9 @@ namespace Client.MirScenes
                     case ItemType.Transform:
                         InfoLanguageString = GameLanguage.ItemTypeTransform;
                         break;
+                    case ItemType.Charm:
+                        InfoLanguageString = GameLanguage.ItemTypeCharm;
+                        break;
                 }
                 WedRingName = string.Format(GameLanguage.WedRingName, InfoLanguageString, "\n", GameLanguage.Weight, HoverItem.Weight + text);
             }
@@ -6344,6 +6347,10 @@ namespace Client.MirScenes
                 else if (realItem.Type == ItemType.Potion && realItem.Shape == 4)
                 {
                     text = string.Format("Exp + {0}% ", minValue + addValue);
+                }
+                else if (HoverItem.Info.Type == ItemType.Charm && HoverItem.Info.Shape == 3)
+                {
+                    text = string.Format("Exp Rate + {0}% ", minValue);
                 }
                 else
                 {
@@ -7050,7 +7057,8 @@ namespace Client.MirScenes
                     OutLine = true,
                     Parent = ItemLabel,
                     //Text = string.Format("Strong + {0}", minValue + addValue)
-                    Text = string.Format(addValue > 0 ? "Strong + {0} (+{1})" : "Strong + {0}", minValue + addValue, addValue)
+                    //Text = string.Format(addValue > 0 ? "Strong + {0} (+{1})" : "Strong + {0}", minValue + addValue, addValue)
+                    Text = string.Format(HoverItem.Info.Type == ItemType.Charm && HoverItem.Info.Shape == 3 ? "Drop Rate + {0}%" : addValue > 0 ? "Strong + {0} (+{1})" : "Strong + {0}", minValue + addValue, addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, STRONGLabel.DisplayRectangle.Right + 4),
