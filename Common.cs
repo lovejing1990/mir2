@@ -89,6 +89,9 @@ public enum ItemGrade : byte
     Rare = 2,
     Legendary = 3,
     Mythical = 4,
+    Uncommon = 5,
+    Unique = 6,
+    Set = 7,
 }
 public enum StatType : byte
 {
@@ -6487,8 +6490,8 @@ public class GameLanguage
                          MC2 = "MC + {0}~{1}",
                          SC = "SC + {0}~{1} (+{2})",
                          SC2 = "SC + {0}~{1}",
-                         Durability = "Durability",
-                         Weight = "W:",
+                         Durability = "Durability:",
+                         Weight = "Weight:",
                          AC = "AC + {0}~{1} (+{2})",
                          AC2 = "AC + {0}~{1}",
                          MAC = "MAC + {0}~{1} (+{2})",
@@ -6617,6 +6620,9 @@ public class GameLanguage
                          ItemGradeRare = "Rare",
                          ItemGradeLegendary = "Legendary",
                          ItemGradeMythical = "Mythical",
+                         ItemGradeUncommon = "Uncommon",
+                         ItemGradeUnique = "Unique",
+                         ItemGradeSet = "Set",
                          NoAccountID = "The AccountID does not exist.",
                          IncorrectPasswordAccountID = "Incorrect Password and AccountID combination.",
                          GroupSwitch = "Allow/Disallow Group Requests",
