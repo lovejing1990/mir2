@@ -501,15 +501,15 @@ namespace Client.MirScenes
                         if (!InventoryDialog.Visible) InventoryDialog.Show();
                         else InventoryDialog.Hide();
                         break;
-                    case KeybindOptions.Equipment://luke
-                    case KeybindOptions.Equipment2:
-                        if (!CharacterDialog.Visible || !CharacterDialog.CharacterPage.Visible)
-                        {
-                            CharacterDialog.Show();
-                            CharacterDialog.ShowCharacterPage();
-                        }
-                        else CharacterDialog.Hide();
-                        break;//luke
+                    //case KeybindOptions.Equipment:
+                    //case KeybindOptions.Equipment2:
+                    //    if (!CharacterDialog.Visible || !CharacterDialog.CharacterPage.Visible)
+                    //    {
+                    //        CharacterDialog.Show();
+                    //        CharacterDialog.ShowCharacterPage();
+                    //    }
+                    //    else CharacterDialog.Hide();
+                    //    break;
                     case KeybindOptions.Skills:
                     case KeybindOptions.Skills2:
                         if (!CharacterDialog.Visible || !CharacterDialog.SkillPage.Visible)
@@ -770,6 +770,16 @@ namespace Client.MirScenes
             }
         }
 
+        public void F10()
+        {
+            if (!CharacterDialog.Visible || !CharacterDialog.CharacterPage.Visible)
+            {
+                CharacterDialog.Show();
+                CharacterDialog.ShowCharacterPage();
+            }
+            else CharacterDialog.Hide();
+        }
+
         public void CloseAllDialog()
         {
             InventoryDialog.Hide();
@@ -826,16 +836,6 @@ namespace Client.MirScenes
             GameScene.InspectTime = CMain.Time + 500;
             InspectDialog.InspectID = Observer.LockedID;
             Network.Enqueue(new C.Inspect { });
-        }
-
-        public void F10()
-        {
-            if (!CharacterDialog.Visible || !CharacterDialog.CharacterPage.Visible)
-            {
-                CharacterDialog.Show();
-                CharacterDialog.ShowCharacterPage();
-            }
-            else CharacterDialog.Hide();
         }
 
         public void UseSpell(int key)
@@ -1118,6 +1118,10 @@ namespace Client.MirScenes
 
             if (Observing)
             {
+
+                ShowReviveMessage = false;
+                MirMessageBox messageBox = new MirMessageBox(GameLanguage.DiedTip, MirMessageBoxButtons.YesNo, false);
+
                 GameScene.Scene.EndObserve.Location = new Point(Settings.ScreenWidth - 75, (GameScene.Scene.MiniMapDialog.Size.Height) + 3);
                 GameScene.Scene.StatusObserve.Location = new Point(Settings.ScreenWidth - 75, (GameScene.Scene.MiniMapDialog.Size.Height) + 30);
                 GameScene.Scene.InspectObserve.Location = new Point(Settings.ScreenWidth - 75, (GameScene.Scene.MiniMapDialog.Size.Height) + 57);
@@ -1131,6 +1135,7 @@ namespace Client.MirScenes
                 {
                     ShowReviveMessage = false;
                     MirMessageBox messageBox = new MirMessageBox(GameLanguage.DiedTip, MirMessageBoxButtons.YesNo, false);
+                    //MirMessageBox messageBox = new MirMessageBox("You have died, Do you want to revive in town?", MirMessageBoxButtons.YesNo, false);
 
                     messageBox.YesButton.Click += (o, e) =>
                     {
@@ -1853,6 +1858,9 @@ namespace Client.MirScenes
                 case (short)ServerPacketIds.ConfirmItemRental:
                     ConfirmItemRental((S.ConfirmItemRental)p);
                     break;
+                case (short)ServerPacketIds.OpenBrowser:                  
+                    OpenBrowser((S.OpenBrowser)p);
+                    break;
                 case (short)ServerPacketIds.EndObserving:
                     EndObserving((S.EndObserving)p);
                     break;
@@ -1861,9 +1869,6 @@ namespace Client.MirScenes
                     break;
                 case (short)ServerPacketIds.ObserverCount:
                     ObserverCountUpdate((S.ObserverCount)p);
-                    break;
-                case (short)ServerPacketIds.OpenBrowser:                  
-                    OpenBrowser((S.OpenBrowser)p);
                     break;
                 default:
                     base.ProcessPacket(p);
@@ -1918,7 +1923,7 @@ namespace Client.MirScenes
         {
             if (MapControl != null && !MapControl.IsDisposed)
                 MapControl.Dispose();
-            MapControl = new MapControl { FileName = Path.Combine(Settings.MapPath, p.FileName + ".map"), Title = p.Title, MiniMap = p.MiniMap, BigMap = p.BigMap, Lights = p.Lights, Lightning = p.Lightning, Fire = p.Fire, MapDarkLight = p.MapDarkLight, Music = p.Music };
+            MapControl = new MapControl { FileName = Path.Combine(Settings.MapPath, p.FileName + ".map"), Title = p.Title, MiniMap = p.MiniMap, BigMap = p.BigMap, Lights = p.Lights, MapDarkLight = p.MapDarkLight, Music = p.Music };
             MapControl.LoadMap();
             InsertControl(0, MapControl);
         }
@@ -7428,7 +7433,7 @@ namespace Client.MirScenes
                             colour = Color.Red;
                         break;
                     case RequiredType.MaxSC:
-                        text = string.Format(GameLanguage.RequiredSC, realItem.RequiredAmount);
+                       text = string.Format(GameLanguage.RequiredSC, realItem.RequiredAmount);
                         if (Observing || MapObject.User.MaxSC < realItem.RequiredAmount)
                             colour = Color.Red;
                         break;
@@ -8883,7 +8888,7 @@ namespace Client.MirScenes
         public string Title = String.Empty;
         public ushort MiniMap, BigMap, Music, SetMusic;
         public LightSetting Lights;
-        public bool Lightning, Fire;
+
         public byte MapDarkLight;
         public long LightningTime, FireTime;
 
@@ -9053,7 +9058,7 @@ namespace Client.MirScenes
                 }
             }
 
-
+            
             if (MapObject.MouseObject != null)
             {
                 MapObject.MouseObject = null;

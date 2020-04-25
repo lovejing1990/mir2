@@ -245,6 +245,9 @@ namespace Server.MirDatabase
             if (Envir.LoadVersion > 30)
                 AllowTrade = reader.ReadBoolean();
 
+            if (Envir.LoadVersion > 77)
+                AllowObserve = reader.ReadBoolean();
+
             if (Envir.LoadVersion > 33)
             {
                 count = reader.ReadInt32();
@@ -368,10 +371,6 @@ namespace Server.MirDatabase
                     GSpurchases.Add(reader.ReadInt32(), reader.ReadInt32());
                 }
             }
-
-            if (Envir.LoadVersion > 80)
-                AllowObserve = reader.ReadBoolean();
-
         }
 
         public void Save(BinaryWriter writer)

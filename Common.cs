@@ -1502,12 +1502,11 @@ public enum ServerPacketIds : short
     CanConfirmItemRental,
     ConfirmItemRental,
     NewRecipeInfo,
-
+    OpenBrowser,
     EndObserving,
     StatusMessage,
     ChangeObserve,
     ObserverCount,
-    OpenBrowser,
 }
 
 public enum ClientPacketIds : short
@@ -2142,7 +2141,6 @@ public static class Globals
                       ConsignmentCost = 5000,
                       MinConsignment = 5000,
                       MaxConsignment = 50000000;
-
 }
 
 public static class Functions
@@ -3381,7 +3379,7 @@ public class UserItem
             CurrentDura = CurrentDura,
             MaxDura = MaxDura,
             Count = Count,
-	        GemCount = GemCount,
+	    GemCount = GemCount,
 
             AC = AC,
             MAC = MAC,
@@ -4772,7 +4770,6 @@ public abstract class Packet
             default:
                 return null;
         }
-
     }
     public static Packet GetServerPacket(short index)
     {
@@ -5252,6 +5249,8 @@ public abstract class Packet
                 return new S.ConfirmItemRental();
             case (short)ServerPacketIds.NewRecipeInfo:
                 return new S.NewRecipeInfo();
+            case (short)ServerPacketIds.OpenBrowser:
+                return new S.OpenBrowser();
             case (short)ServerPacketIds.EndObserving:
                 return new S.EndObserving();
             case (short)ServerPacketIds.StatusMessage:
@@ -5260,8 +5259,6 @@ public abstract class Packet
                 return new S.ChangeObserve();
             case (short)ServerPacketIds.ObserverCount:
                 return new S.ObserverCount();
-            case (short)ServerPacketIds.OpenBrowser:
-                return new S.OpenBrowser();
             default:
                 return null;
         }

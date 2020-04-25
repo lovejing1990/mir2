@@ -1,12 +1,14 @@
-﻿using System;
-using Server.MirDatabase;
+﻿using Server.MirDatabase;
 using Server.MirEnvir;
 using Server.MirNetwork;
 using Server.MirObjects.Monsters;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using S = ServerPackets;
+using System.Text.RegularExpressions;
+using Server.MirObjects.Monsters;
 
 namespace Server.MirObjects
 {
@@ -22,8 +24,8 @@ namespace Server.MirObjects
 
         public long LastRecallTime, LastRevivalTime, LastTeleportTime, LastProbeTime, MenteeEXP;
 
-		public short Looks_Armour = 0, Looks_Weapon = -1, Looks_WeaponEffect = 0;
-		public byte Looks_Wings = 0;
+        public short Looks_Armour = 0, Looks_Weapon = -1, Looks_WeaponEffect = 0;
+        public byte Looks_Wings = 0;
 
         public bool WarZone = false;
 
@@ -51,8 +53,7 @@ namespace Server.MirObjects
         public override Point CurrentLocation
         {
             get { return Info.CurrentLocation; }
-            set
-            {
+            set {
                 Info.CurrentLocation = value;
                 InformObservers();
             }
@@ -475,7 +476,7 @@ namespace Server.MirObjects
                 }
             }
             Pets.Clear();
-            
+
             for (int i = 0; i < Info.Magics.Count; i++)
             {
                 if (Envir.Time < (Info.Magics[i].CastTime + Info.Magics[i].GetDelay()))
@@ -1438,7 +1439,7 @@ namespace Server.MirObjects
                 CurrentObservers[i].Died();
 
 
-            Enqueue(new S.Death { Direction = Direction, Location = CurrentLocation });
+                Enqueue(new S.Death { Direction = Direction, Location = CurrentLocation });
             Broadcast(new S.ObjectDied { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation });
 
             for (int i = 0; i < Buffs.Count; i++)
@@ -2548,8 +2549,6 @@ namespace Server.MirObjects
                 MiniMap = CurrentMap.Info.MiniMap,
                 Lights = CurrentMap.Info.Light,
                 BigMap = CurrentMap.Info.BigMap,
-                Lightning = CurrentMap.Info.Lightning,
-                Fire = CurrentMap.Info.Fire,
                 MapDarkLight = CurrentMap.Info.MapDarkLight,
                 Music = CurrentMap.Info.Music,
             });
@@ -3541,17 +3540,17 @@ namespace Server.MirObjects
         {
             if (CurrentMap == null) return;
 
-            Color myColour = GetNameColour(this);
+	    Color myColour = GetNameColour(this);
             for (int i = CurrentMap.Players.Count - 1; i >= 0; i--)
             {
                 PlayerObject player = CurrentMap.Players[i];
                 if (player == this) continue;
 
                 if (Functions.InRange(CurrentLocation, player.CurrentLocation, Globals.DataRange))
-                player.Enqueue(new S.ObjectColourChanged { ObjectID = ObjectID, NameColour = myColour });
+                    player.Enqueue(new S.ObjectColourChanged { ObjectID = ObjectID, NameColour = myColour });
             }
-
-            for (int i = CurrentMap.Observers.Count - 1; i >= 0; i--)
+	    
+	    for (int i = CurrentMap.Observers.Count - 1; i >= 0; i--)
             {
                 ObserverObject observer = CurrentMap.Observers[i];
                 if (observer == null) continue;
@@ -3565,12 +3564,12 @@ namespace Server.MirObjects
         {
             Packet p;
             if (CurrentMap == null) return;
-
+        
             for (int i = CurrentMap.Players.Count - 1; i >= 0; i--)
             {
                 PlayerObject player = CurrentMap.Players[i];
                 if (player == this) continue;
-
+        
                 if (Functions.InRange(CurrentLocation, player.CurrentLocation, Globals.DataRange))
                 {
                     p = GetInfoEx(player);
@@ -3756,7 +3755,7 @@ namespace Server.MirObjects
             }
             else if (message.StartsWith("!"))
             {
-                //Shout
+                //Shout 
                 if (Envir.Time < ShoutTime)
                 {
                     ReceiveChat(string.Format("You cannot shout for another {0} seconds.", Math.Ceiling((ShoutTime - Envir.Time) / 1000D)), ChatType.System);
@@ -5772,7 +5771,7 @@ namespace Server.MirObjects
 
 
             cell = CurrentMap.GetCell(CurrentLocation);
-
+            
             for (int i = 0; i < cell.Objects.Count; i++)
             {
                 if (cell.Objects[i].Race != ObjectType.Spell) continue;
@@ -14358,7 +14357,7 @@ namespace Server.MirObjects
         public void Enqueue(Packet p)
         {
             if (Connection == null || Connection.Observer != null) return;
-            Connection.Enqueue(p);
+                Connection.Enqueue(p);
         }
 
         public void SpellToggle(Spell spell, bool use)

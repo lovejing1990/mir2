@@ -956,7 +956,7 @@ namespace Server.MirNetwork
                 return;
             }
 
-            if (Stage == GameStage.Game)//!=
+            if (Stage == GameStage.Game)
                 Player.Chat(p.Message);
             else if (Stage == GameStage.Observing)
                 Observer.Chat(p.Message);
@@ -1092,7 +1092,7 @@ namespace Server.MirNetwork
         }
         private void Inspect(C.Inspect p)
         {
-            if (Stage == GameStage.Game)//!=
+            if (Stage == GameStage.Game)
             {
                 if (p.Ranking)
                     Player.Inspect((int)p.ObjectID);
@@ -1772,7 +1772,7 @@ namespace Server.MirNetwork
         }
         private void GetRanking(C.GetRanking p)
         {
-            if (Stage == GameStage.Game)//!=
+            if (Stage == GameStage.Game)
             {
                 Player.GetRanking(p.RankIndex);
             }

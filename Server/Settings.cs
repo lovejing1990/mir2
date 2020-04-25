@@ -498,9 +498,9 @@ namespace Server
             LoadMentor();
             LoadGoods();
             LoadGem();
-            LoadObserver();
             //Language
             GameLanguage.LoadServerLanguage(Path.Combine(ConfigPath, "Language.ini"));
+            LoadObserver();
         }
         public static void Save()
         {
