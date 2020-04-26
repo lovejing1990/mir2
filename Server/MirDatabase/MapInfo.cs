@@ -37,6 +37,7 @@ namespace Server.MirDatabase
         public List<NPCInfo> NPCs = new List<NPCInfo>();
         public List<MineZone> MineZones = new List<MineZone>();
         public List<Point> ActiveCoords = new List<Point>();
+        public List<PublicEventInfo> PublicEvents = new List<PublicEventInfo>();
 
         public InstanceInfo Instance;
 
@@ -51,7 +52,7 @@ namespace Server.MirDatabase
             FileName = reader.ReadString();
             Title = reader.ReadString();
             MiniMap = reader.ReadUInt16();
-            Light = (LightSetting) reader.ReadByte();
+            Light = (LightSetting)reader.ReadByte();
 
             if (Envir.LoadVersion >= 3) BigMap = reader.ReadUInt16();
 
@@ -78,7 +79,7 @@ namespace Server.MirDatabase
 
             NoTeleport = reader.ReadBoolean();
             NoReconnect = reader.ReadBoolean();
-            NoReconnectMap = reader.ReadString();           
+            NoReconnectMap = reader.ReadString();
 
             NoRandom = reader.ReadBoolean();
             NoEscape = reader.ReadBoolean();
@@ -112,11 +113,17 @@ namespace Server.MirDatabase
             NoFight = reader.ReadBoolean();
 
             if (Envir.LoadVersion < 53) return;
-                Music = reader.ReadUInt16();
+            Music = reader.ReadUInt16();
             if (Envir.LoadVersion < 78) return;
             NoTownTeleport = reader.ReadBoolean();
             if (Envir.LoadVersion < 79) return;
             NoReincarnation = reader.ReadBoolean();
+            if (Envir.LoadCustomVersion >= 1)
+            {
+                count = reader.ReadInt32();
+                for (int i = 0; i < count; i++)
+                    PublicEvents.Add(new PublicEventInfo(reader));
+            }
         }
 
         public void Save(BinaryWriter writer)
@@ -171,6 +178,9 @@ namespace Server.MirDatabase
             writer.Write(Music);
             writer.Write(NoTownTeleport);
             writer.Write(NoReincarnation);
+            writer.Write(PublicEvents.Count);
+            for (int i = 0; i < PublicEvents.Count; i++)
+                PublicEvents[i].Save(writer);
 
         }
 
@@ -198,6 +208,11 @@ namespace Server.MirDatabase
             for (int i = 0; i < SafeZones.Count; i++)
                 if (SafeZones[i].StartPoint)
                     Envir.StartPoints.Add(SafeZones[i]);
+        }
+
+        public void CreatePublicEvent()
+        {
+            PublicEvents.Add(new PublicEventInfo { Info = this, Index = ++EditEnvir.MapEventIndex });
         }
 
         public void CreateInstance()

@@ -42,11 +42,16 @@ namespace Server.MirEnvir
 
         public List<ConquestObject> Conquest = new List<ConquestObject>();
         public ConquestObject tempConquest;
+        public List<PublicEvent> Events = new List<PublicEvent>();
 
         public Map(MapInfo info)
         {
             Info = info;
             Thread = Envir.Random.Next(Settings.ThreadLimit);
+
+            foreach (var publicEventInfo in info.PublicEvents)
+                Events.Add(new PublicEvent(publicEventInfo, this));
+
         }
 
         public Door AddDoor(byte DoorIndex, Point location)
@@ -2230,6 +2235,20 @@ namespace Server.MirEnvir
             return null;
         }
 
+        public PublicEvent GetPublicEvent(Point location)
+        {
+            for (int i = 0; i < Events.Count; i++)
+            {
+                PublicEvent publicEvent = Events[i];
+                if (!publicEvent.IsActive)
+                    continue;
+
+                if (Functions.InRange(publicEvent.CurrentLocation, location, publicEvent.Info.EventSize))
+                    return publicEvent;
+            }
+            return null;
+        }
+
         //public ConquestObject GetInnerConquest(Map map, Point location)
         //{
         //    for (int i = 0; i < Conquest.Count; i++)
@@ -2347,6 +2366,8 @@ namespace Server.MirEnvir
         public byte ErrorCount = 0;
 
         public List<RouteInfo> Route;
+        public bool IsEventObjective = false;
+        public PublicEvent Event;
 
         public MapRespawn(RespawnInfo info)
         {

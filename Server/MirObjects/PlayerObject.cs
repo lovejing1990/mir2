@@ -28,6 +28,8 @@ namespace Server.MirObjects
         public byte Looks_Wings = 0;
 
         public bool WarZone = false;
+        public PublicEvent tempEvent;
+        public PublicEvent LastUsedEvent;
 
         public override ObjectType Race
         {
@@ -2247,6 +2249,7 @@ namespace Server.MirObjects
                 GetMentor();
 
             CheckConquest();
+            CheckPublicEvent();
 
             GetGameShop();
 
@@ -2576,6 +2579,15 @@ namespace Server.MirObjects
                 BigMap = CurrentMap.Info.BigMap,
                 MapDarkLight = CurrentMap.Info.MapDarkLight,
                 Music = CurrentMap.Info.Music,
+                MapEvents = CurrentMap.Events.Where(o => o.IsActive && CanGainDailyAward(o.Info.Index) && CanGainWeeklyAward(o.Info.Index)).Select(e => new MapEventClientSide()
+                {
+                    EventName = e.Info.EventName,
+                    Index = e.Info.Index,
+                    IsActive = e.IsActive,
+                    Location = e.CurrentLocation,
+                    Size = e.Info.EventSize,
+                    EventType = e.Info.EventType
+                }).ToList(),
             });
         }
 
@@ -5852,8 +5864,7 @@ namespace Server.MirObjects
 
 
             CheckConquest();
-
-
+            CheckPublicEvent();
 
             CellTime = Envir.Time + 500;
             ActionTime = Envir.Time + GetDelayTime(MoveDelay);
@@ -5994,8 +6005,7 @@ namespace Server.MirObjects
 
 
             CheckConquest();
-
-
+            CheckPublicEvent();
 
             CellTime = Envir.Time + 500;
             ActionTime = Envir.Time + GetDelayTime(MoveDelay);
@@ -9802,6 +9812,10 @@ namespace Server.MirObjects
 
                     if (obj != null)
                         obj.Call(this, page);
+
+                    if (obj == null && LastUsedEvent != null && LastUsedEvent.DefaultNPC != null && LastUsedEvent.DefaultNPC.ObjectID == npcid)
+                        obj = LastUsedEvent.DefaultNPC;
+
                 }
 
                 CallNPCNextPage();
@@ -10114,6 +10128,7 @@ namespace Server.MirObjects
             }
 
             CheckConquest(true);
+            CheckPublicEvent();
         }
 
         public override bool Teleport(Map temp, Point location, bool effects = true, byte effectnumber = 0)
@@ -10140,7 +10155,16 @@ namespace Server.MirObjects
                 Location = CurrentLocation,
                 Direction = Direction,
                 MapDarkLight = CurrentMap.Info.MapDarkLight,
-                Music = CurrentMap.Info.Music
+                Music = CurrentMap.Info.Music,
+                MapEvents = CurrentMap.Events.Where(o => o.IsActive && CanGainDailyAward(o.Info.Index) && CanGainWeeklyAward(o.Info.Index)).Select(e => new MapEventClientSide()
+                {
+                    EventName = e.Info.EventName,
+                    Index = e.Info.Index,
+                    IsActive = e.IsActive,
+                    Location = e.CurrentLocation,
+                    Size = e.Info.EventSize,
+                    EventType = e.Info.EventType
+                }).ToList(),
             });
 
             ObserverInform = true;
@@ -10172,6 +10196,7 @@ namespace Server.MirObjects
                 InSafeZone = false;
 
             CheckConquest();
+            CheckPublicEvent();
 
             Fishing = false;
             Enqueue(GetFishInfo());
@@ -14457,6 +14482,8 @@ namespace Server.MirObjects
             Connection = null;
             Account = null;
             Info = null;
+            tempEvent = null;
+            LastUsedEvent = null;
         }
 
         public void Enqueue(Packet p)
@@ -14972,6 +14999,7 @@ namespace Server.MirObjects
                 Account.Gold -= Globals.ConsignmentCost;
                 Enqueue(new S.LoseGold { Gold = Globals.ConsignmentCost });
                 RefreshBagWeight();
+                RefreshBagStats();//luke test
 
             }
 
@@ -20090,6 +20118,76 @@ namespace Server.MirObjects
             RefreshNameColour();
         }
         #endregion
+
+        #region Events
+        public void EnterPublicEvent()
+        {
+            if (tempEvent == null)
+                return;
+
+            List<MonsterEventObjective> monObj = tempEvent.MapRespawns.Select(o => new MonsterEventObjective()
+            {
+                MonsterName = o.Monster.Name,
+                MonsterTotalCount = o.Info.Count,
+                MonsterAliveCount = o.Count
+            }).ToList();
+
+            //var remainingCount = string.Format("{0}/{1}", alive, total);
+            //var completedPerc = (int)(((decimal)dead / total) * 100);
+
+            var packet = new S.EnterOrUpdatePublicEvent(tempEvent.Info.EventName, tempEvent.Info.EventType, tempEvent.Info.ObjectiveMessage, tempEvent.Stage, monObj);
+
+            Enqueue(packet);
+            InSafeZone = tempEvent.Info.IsSafezone;
+        }
+        public void LeavePublicEvent()
+        {
+            var packet = new S.LeavePublicEvent { };
+            packet.EventName = tempEvent.Info.EventName;
+            Enqueue(packet);
+
+            if (InSafeZone)
+                InSafeZone = false;
+        }
+        public bool CanGainDailyAward(int eventIndex)
+        {
+            return !Info.DailyEventsCompleted.Any(o => o == eventIndex);
+        }
+        public bool CanGainWeeklyAward(int eventIndex)
+        {
+            return !Info.WeeklyEventsCompleted.Any(o => o == eventIndex);
+        }
+        public void CheckPublicEvent()
+        {
+            if (tempEvent == null)
+            {
+                PublicEvent currEvent = CurrentMap.GetPublicEvent(CurrentLocation);
+                tempEvent = currEvent;
+
+                if (currEvent != null)
+                {
+                    EnterPublicEvent();
+                    LastUsedEvent = currEvent;
+                }
+            }
+            else
+            {
+                bool inRange = Functions.InRange(tempEvent.CurrentLocation, CurrentLocation, tempEvent.Info.EventSize);
+
+                if (inRange && tempEvent.IsActive)
+                {
+                    InSafeZone = tempEvent.Info.IsSafezone;
+                    return;
+                }
+                else
+                {
+                    LeavePublicEvent();
+                    tempEvent = null;
+                }
+            }
+        }
+        #endregion
+
 
         private long[] LastRankRequest = new long[6];
         public void GetRanking(byte RankType)

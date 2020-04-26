@@ -31,7 +31,8 @@ namespace Server
             ValuePath = Path.Combine(EnvirPath, "Values"),
             ReportPath = Path.Combine(".", "Reports"),
             LogPath = Path.Combine(".", "Logs"),
-            ErrorPath = Path.Combine(LogPath, "Errors");
+            ErrorPath = Path.Combine(LogPath, "Errors"),
+            EventsPath = Path.Combine(".", "Events");
 
 
         private static readonly InIReader Reader = new InIReader(Path.Combine(ConfigPath, "Setup.ini"));
