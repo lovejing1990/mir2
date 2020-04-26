@@ -125,6 +125,10 @@ namespace Client.MirObjects
             {
                 switch (Grade)
                 {
+                    case ItemGrade.Common:
+                        _effect.BackColour = Color.GhostWhite;
+                        _effect.ForeColour = Color.GhostWhite;
+                        break;
                     case ItemGrade.Rare:
                         _effect.BackColour = Color.DeepSkyBlue;
                         _effect.ForeColour = Color.DeepSkyBlue;

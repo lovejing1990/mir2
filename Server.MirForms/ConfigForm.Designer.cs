@@ -73,6 +73,11 @@
             this.SaveDelayTextBox = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.CharacterStartInfo = new System.Windows.Forms.GroupBox();
+            this.StartGoldBox = new System.Windows.Forms.TextBox();
+            this.label17 = new System.Windows.Forms.Label();
+            this.StartLevelBox = new System.Windows.Forms.TextBox();
+            this.label18 = new System.Windows.Forms.Label();
             this.gameMasterEffect_CheckBox = new System.Windows.Forms.CheckBox();
             this.SafeZoneHealingCheckBox = new System.Windows.Forms.CheckBox();
             this.SafeZoneBorderCheckBox = new System.Windows.Forms.CheckBox();
@@ -85,6 +90,7 @@
             this.tabPage3.SuspendLayout();
             this.tabPage4.SuspendLayout();
             this.tabPage5.SuspendLayout();
+            this.CharacterStartInfo.SuspendLayout();
             this.SuspendLayout();
             // 
             // SaveButton
@@ -543,6 +549,7 @@
             // 
             // tabPage5
             // 
+            this.tabPage5.Controls.Add(this.CharacterStartInfo);
             this.tabPage5.Controls.Add(this.gameMasterEffect_CheckBox);
             this.tabPage5.Controls.Add(this.SafeZoneHealingCheckBox);
             this.tabPage5.Controls.Add(this.SafeZoneBorderCheckBox);
@@ -553,6 +560,55 @@
             this.tabPage5.TabIndex = 4;
             this.tabPage5.Text = "Optional";
             this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // CharacterStartInfo
+            // 
+            this.CharacterStartInfo.Controls.Add(this.StartGoldBox);
+            this.CharacterStartInfo.Controls.Add(this.label17);
+            this.CharacterStartInfo.Controls.Add(this.StartLevelBox);
+            this.CharacterStartInfo.Controls.Add(this.label18);
+            this.CharacterStartInfo.Location = new System.Drawing.Point(220, 177);
+            this.CharacterStartInfo.Name = "CharacterStartInfo";
+            this.CharacterStartInfo.Size = new System.Drawing.Size(181, 92);
+            this.CharacterStartInfo.TabIndex = 3;
+            this.CharacterStartInfo.TabStop = false;
+            this.CharacterStartInfo.Text = "Character Start Info";
+            // 
+            // StartGoldBox
+            // 
+            this.StartGoldBox.Location = new System.Drawing.Point(66, 54);
+            this.StartGoldBox.MaxLength = 10;
+            this.StartGoldBox.Name = "StartGoldBox";
+            this.StartGoldBox.Size = new System.Drawing.Size(86, 20);
+            this.StartGoldBox.TabIndex = 25;
+            this.StartGoldBox.TextChanged += new System.EventHandler(this.StartGoldBox_TextChanged);
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(3, 57);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(57, 13);
+            this.label17.TabIndex = 24;
+            this.label17.Text = "Start Gold:";
+            // 
+            // StartLevelBox
+            // 
+            this.StartLevelBox.Location = new System.Drawing.Point(66, 26);
+            this.StartLevelBox.MaxLength = 10;
+            this.StartLevelBox.Name = "StartLevelBox";
+            this.StartLevelBox.Size = new System.Drawing.Size(86, 20);
+            this.StartLevelBox.TabIndex = 23;
+            this.StartLevelBox.TextChanged += new System.EventHandler(this.StartLevelBox_TextChanged);
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(4, 28);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(61, 13);
+            this.label18.TabIndex = 22;
+            this.label18.Text = "Start Level:";
             // 
             // gameMasterEffect_CheckBox
             // 
@@ -681,5 +737,10 @@
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.CheckBox StartHTTPCheckBox;
+        private System.Windows.Forms.GroupBox CharacterStartInfo;
+        private System.Windows.Forms.TextBox StartGoldBox;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.TextBox StartLevelBox;
+        private System.Windows.Forms.Label label18;
     }
 }

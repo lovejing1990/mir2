@@ -458,6 +458,7 @@ namespace Client.MirControls
                 case ItemType.Script:
                 case ItemType.Pets:
                 case ItemType.Transform:
+                case ItemType.CraftingRecipe:
                     if (CanUseItem() && GridType == MirGridType.Inventory)
                     {
                         if (CMain.Time < GameScene.UseItemTime) return;
@@ -2065,6 +2066,12 @@ namespace Client.MirControls
             if (Item != null)
                 switch (Item.Info.Grade)
                 {
+                    case ItemGrade.Common:
+                        GradeEffect.Animated = true;
+                        GradeEffect.Visible = true;
+                        GradeEffect.BackColour = Color.GhostWhite;
+                        GradeEffect.ForeColour = Color.GhostWhite;
+                        break;
                     case ItemGrade.Rare:
                         GradeEffect.Animated = true;
                         GradeEffect.Visible = true;

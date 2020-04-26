@@ -818,6 +818,7 @@ public enum ItemType : byte
     Pets = 36,
     Transform = 37,
     Charm = 38,
+    CraftingRecipe = 39,
 }
 
 public enum MirGridType : byte
@@ -6477,11 +6478,11 @@ public class GameLanguage
                          ExperienceGained = "Experience Gained {0}",
 
                          ItemDescription = "Item Description",
-                         RequiredLevel = "Required Level : {0}",
-                         RequiredDC = "Required DC : {0}",
-                         RequiredMC = "Required MC : {0}",
-                         RequiredSC = "Required SC : {0}",
-                         ClassRequired = "Class Required : {0}",
+                         RequiredLevel = "Required Level: {0}",
+                         RequiredDC = "Required DC: {0}",
+                         RequiredMC = "Required MC: {0}",
+                         RequiredSC = "Required SC: {0}",
+                         ClassRequired = "Class Required: {0}",
 
                          Holy = "Holy: + {0} (+{1})",
                          Holy2 = "Holy: + {0}",
@@ -6489,18 +6490,18 @@ public class GameLanguage
                          Accuracy2 = "Accuracy: + {0}",
                          Agility = "Agility: + {0} (+{1})",
                          Agility2 = "Agility: + {0}",
-                         DC = "DC + {0}~{1} (+{2})",
-                         DC2 = "DC + {0}~{1}",
-                         MC = "MC + {0}~{1} (+{2})",
-                         MC2 = "MC + {0}~{1}",
-                         SC = "SC + {0}~{1} (+{2})",
-                         SC2 = "SC + {0}~{1}",
+                         DC = "DC: {0}-{1} (+{2})",
+                         DC2 = "DC: {0}-{1}",
+                         MC = "MC: {0}-{1} (+{2})",
+                         MC2 = "MC: {0}-{1}",
+                         SC = "SC: {0}-{1} (+{2})",
+                         SC2 = "SC: {0}-{1}",
                          Durability = "Durability:",
                          Weight = "Weight:",
-                         AC = "AC + {0}~{1} (+{2})",
-                         AC2 = "AC + {0}~{1}",
-                         MAC = "MAC + {0}~{1} (+{2})",
-                         MAC2 = "MAC + {0}~{1}",
+                         AC = "AC: {0}-{1} (+{2})",
+                         AC2 = "AC: {0}-{1}",
+                         MAC = "MAC: {0}-{1} (+{2})",
+                         MAC2 = "MAC: {0}-{1}",
                          Luck = "Luck + {0}",
 
                          DeleteCharacter = "Are you sure you want to Delete the character {0}",
@@ -6621,7 +6622,8 @@ public class GameLanguage
                          ItemTypePets = "Pets",
                          ItemTypeTransform = "Transform",
                          ItemTypeCharm = "Charm",
-
+                         ItemTypeCraftingRecipe = "CraftingRecipe",
+        
                          ItemGradeCommon = "Common",
                          ItemGradeRare = "Rare",
                          ItemGradeLegendary = "Legendary",
@@ -6895,8 +6897,9 @@ public class GameLanguage
         GameLanguage.ItemTypePets = reader.ReadString("Language", "ItemTypePets", GameLanguage.ItemTypePets);
         GameLanguage.ItemTypeTransform = reader.ReadString("Language", "ItemTypeTransform", GameLanguage.ItemTypeTransform);
         GameLanguage.ItemTypeCharm = reader.ReadString("Language", "ItemTypeCharm", GameLanguage.ItemTypeCharm);
+        GameLanguage.ItemTypeCraftingRecipe = reader.ReadString("Language", "ItemTypeCraftingRecipe", GameLanguage.ItemTypeCraftingRecipe);
 
-        GameLanguage.ItemGradeCommon = reader.ReadString("Language", "ItemGradeCommon", GameLanguage.ItemGradeCommon);
+       GameLanguage.ItemGradeCommon = reader.ReadString("Language", "ItemGradeCommon", GameLanguage.ItemGradeCommon);
         GameLanguage.ItemGradeRare = reader.ReadString("Language", "ItemGradeRare", GameLanguage.ItemGradeRare);
         GameLanguage.ItemGradeLegendary = reader.ReadString("Language", "ItemGradeLegendary", GameLanguage.ItemGradeLegendary);
         GameLanguage.ItemGradeMythical = reader.ReadString("Language", "ItemGradeMythical", GameLanguage.ItemGradeMythical);
@@ -7126,6 +7129,7 @@ public class GameLanguage
         reader.Write("Language", "ItemTypePets", GameLanguage.ItemTypePets);
         reader.Write("Language", "ItemTypeTransform", GameLanguage.ItemTypeTransform);
         reader.Write("Language", "ItemTypeCharm", GameLanguage.ItemTypeCharm);
+        reader.Write("Language", "ItemTypeCraftingRecipe", GameLanguage.ItemTypeCraftingRecipe);
 
         reader.Write("Language", "ItemGradeCommon", GameLanguage.ItemGradeCommon);
         reader.Write("Language", "ItemGradeRare", GameLanguage.ItemGradeRare);

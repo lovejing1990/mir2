@@ -1316,7 +1316,7 @@ namespace Client.MirScenes.Dialogs
             switch (grade)
             {
                 case ItemGrade.Common:
-                    return Color.Yellow;
+                    return Color.GhostWhite;
                 case ItemGrade.Rare:
                     return Color.DeepSkyBlue;
                 case ItemGrade.Legendary:
