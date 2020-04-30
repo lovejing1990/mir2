@@ -15,6 +15,10 @@ namespace Server.MirEnvir
         {
             get { return Envir; }
         }
+
+        protected static MessageQueue MessageQueue =>
+            MessageQueue.Instance;
+
         public PublicEventInfo Info;
         public Map Map;
         public List<Point> Locations = new List<Point>();
@@ -120,8 +124,7 @@ namespace Server.MirEnvir
         {
             Point randomLocation = Locations[Envir.Random.Next(Locations.Count)];
             CurrentLocation = randomLocation;
-            //MessageQueue.EnqueueDebugging(string.Format("{0} Activating Event:{1}", Map.Info.FileName, Info.EventName));
-           
+            MessageQueue.EnqueueDebugging(string.Format("{0} Activating Event:{1}", Map.Info.FileName, Info.EventName));
             switch (Info.EventType)
             {
                 case EventType.Invasion:
@@ -179,7 +182,7 @@ namespace Server.MirEnvir
             var respawns = Info.Respawns.Where(o => o.Order == order).ToList();
             if (respawns == null || respawns.Count == 0)
             {
-                //MessageQueue.EnqueueDebugging(string.Format("De Activating Invasion Event:{0} Stage:{1}", Info.EventName, Stage));
+                MessageQueue.EnqueueDebugging(string.Format("De Activating Invasion Event:{0} Stage:{1}", Info.EventName, Stage));
                 IsActive = false;
             }
 
@@ -194,7 +197,7 @@ namespace Server.MirEnvir
                 var monster = Envir.GetMonsterInfo(eventRespawn.MonsterName);
                 if (monster == null)
                 {
-                    //MessageQueue.EnqueueDebugging(string.Format("{0} Event:{1} FAILED COULDN'T FIND MONSTER {2}", Map.Info.FileName, Info.EventName, eventRespawn.MonsterName));
+                    MessageQueue.EnqueueDebugging(string.Format("{0} Event:{1} FAILED COULDN'T FIND MONSTER {2}", Map.Info.FileName, Info.EventName, eventRespawn.MonsterName));
                     continue;
                 }
 
@@ -241,7 +244,7 @@ namespace Server.MirEnvir
                 var monster = Envir.GetMonsterInfo(eventRespawn.MonsterName);
                 if (monster == null)
                 {
-                    //MessageQueue.EnqueueDebugging(string.Format("{0} Activating Event:{1} FAILED COULDN'T FIND MONSTER {2}", Map.Info.FileName, Info.EventName, eventRespawn.MonsterName));
+                    MessageQueue.EnqueueDebugging(string.Format("{0} Activating Event:{1} FAILED COULDN'T FIND MONSTER {2}", Map.Info.FileName, Info.EventName, eventRespawn.MonsterName));
                     return;
                 }
                 respawnInfo.Spread = eventRespawn.MonsterCount;
@@ -414,7 +417,7 @@ namespace Server.MirEnvir
 
                     if (objectiveRespawns.All(o => o.Count == 0))
                     {
-                        //MessageQueue.EnqueueDebugging(string.Format("De Activating Event:{0}", Info.EventName));
+                        MessageQueue.EnqueueDebugging(string.Format("De Activating Event:{0}", Info.EventName));
                         IsActive = false;
                     }
                     break;
