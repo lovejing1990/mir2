@@ -254,6 +254,18 @@ namespace Server.MirObjects
             return Envir.Random.Next(min, max + 1);
         }
 
+        public int GetRangeAttackPower(int min, int max, int range)
+        {
+            //maxRange = highest possible damage
+            //minRange = lowest possible damage
+
+            decimal x = ((decimal)min / (Globals.MaxAttackRange)) * (Globals.MaxAttackRange - range);
+
+            min -= (int)Math.Floor(x);
+
+            return GetAttackPower(min, max);
+        }
+
         public int GetDefencePower(int min, int max)
         {
             if (min < 0) min = 0;
@@ -302,6 +314,7 @@ namespace Server.MirObjects
         public bool CanFly(Point target)
         {
             Point location = CurrentLocation;
+
             while (location != target)
             {
                 MirDirection dir = Functions.DirectionFromPoint(location, target);
@@ -311,7 +324,6 @@ namespace Server.MirObjects
                 if (location.X < 0 || location.Y < 0 || location.X >= CurrentMap.Width || location.Y >= CurrentMap.Height) return false;
 
                 if (!CurrentMap.GetCell(location).Valid) return false;
-
             }
 
             return true;

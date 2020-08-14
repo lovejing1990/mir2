@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Web.UI.WebControls;
 using System.Windows.Forms;
+using Server.MirDatabase;
 using Server.MirEnvir;
 
 namespace Server
@@ -108,7 +109,6 @@ namespace Server
             if (ActiveControl != sender) return;
             MinesChanged = true;
             Settings.MineSetList.Add(new MineSet());
-            //MineIndexcomboBox.Items.Add(Settings.MineSetList.Count);
             MineIndexcomboBox.Items.Add(new ListItem(String.Empty, Settings.MineSetList.Count.ToString()));
             MineIndexcomboBox.SelectedIndex = Settings.MineSetList.Count - 1;
             MineDropsIndexcomboBox.Items.Clear();

@@ -948,6 +948,25 @@ namespace ServerPackets
             Info.Save(writer);
         }
     }
+    public sealed class NewChatItem : Packet
+    {
+        public override short Index
+        {
+            get { return (short)ServerPacketIds.NewChatItem; }
+        }
+
+        public UserItem Item;
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            Item = new UserItem(reader);
+        }
+
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            Item.Save(writer);
+        }
+    }
     public sealed class MoveItem : Packet
     {
         public override short Index
@@ -3790,7 +3809,7 @@ namespace ServerPackets
         public string Name = string.Empty;
         public byte Status = 0;
         public byte RankIndex = 0;
-        public List<Rank> Ranks = new List<Rank>();
+        public List<GuildRank> Ranks = new List<GuildRank>();
         protected override void ReadPacket(BinaryReader reader)
         {
             Name = reader.ReadString();
@@ -3800,7 +3819,7 @@ namespace ServerPackets
             {
                 int rankcount = reader.ReadInt32();
                 for (int i = 0; i < rankcount; i++)
-                    Ranks.Add(new Rank(reader));
+                    Ranks.Add(new GuildRank(reader));
             }
         }
         protected override void WritePacket(BinaryWriter writer)
@@ -3835,7 +3854,7 @@ namespace ServerPackets
         public bool Voting;
         public byte ItemCount;
         public byte BuffCount;
-        public RankOptions MyOptions;
+        public GuildRankOptions MyOptions;
         public int MyRankId;
 
         protected override void ReadPacket(BinaryReader reader)
@@ -3852,7 +3871,7 @@ namespace ServerPackets
             Voting = reader.ReadBoolean();
             ItemCount = reader.ReadByte();
             BuffCount = reader.ReadByte();
-            MyOptions = (RankOptions)reader.ReadByte();
+            MyOptions = (GuildRankOptions)reader.ReadByte();
             MyRankId = reader.ReadInt32();
         }
         protected override void WritePacket(BinaryWriter writer)
@@ -3986,7 +4005,7 @@ namespace ServerPackets
             {
                 writer.Write(Items[i] != null);
                 if (Items[i] != null)
-                    Items[i].save(writer);
+                    Items[i].Save(writer);
             }
         }
 
@@ -4693,13 +4712,13 @@ namespace ServerPackets
 
         public uint ObjectID;
         public Point Location;
-        public ushort Image;
+        public int Image;
 
         protected override void ReadPacket(BinaryReader reader)
         {
             ObjectID = reader.ReadUInt32();
             Location = new Point(reader.ReadInt32(), reader.ReadInt32());
-            Image = reader.ReadUInt16();
+            Image = reader.ReadInt32();
         }
 
         protected override void WritePacket(BinaryWriter writer)
@@ -5318,7 +5337,7 @@ namespace ServerPackets
 
         public byte RankType = 0;
         public int MyRank = 0;
-        public List<Rank_Character_Info> Listings = new List<Rank_Character_Info>();
+        public List<RankCharacterInfo> Listings = new List<RankCharacterInfo>();
 
         protected override void ReadPacket(BinaryReader reader)
         {
@@ -5327,7 +5346,7 @@ namespace ServerPackets
             int count = reader.ReadInt32();
             for (int i = 0; i < count; i++)
             {
-                Listings.Add(new Rank_Character_Info(reader));
+                Listings.Add(new RankCharacterInfo(reader));
             }
         }
         protected override void WritePacket(BinaryWriter writer)
@@ -5666,6 +5685,24 @@ namespace ServerPackets
         protected override void WritePacket(BinaryWriter writer)
         {
             writer.Write(Url);
+        }
+    }
+    public sealed class PlaySound : Packet
+    {
+        public int Sound;
+
+        public override short Index
+        {
+            get { return (short)ServerPacketIds.PlaySound; }
+        }
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            Sound = reader.ReadInt32();
+        }
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(Sound);
         }
     }
 }

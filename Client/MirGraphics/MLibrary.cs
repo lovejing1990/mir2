@@ -2,8 +2,8 @@
 using System.Drawing;
 using System.IO;
 using System.Threading;
-using Microsoft.DirectX;
-using Microsoft.DirectX.Direct3D;
+using SlimDX;
+using SlimDX.Direct3D9;
 using System.IO.Compression;
 
 namespace Client.MirGraphics
@@ -52,17 +52,17 @@ namespace Client.MirGraphics
         public static readonly MLibrary
             Deco = new MLibrary(Settings.DataPath + "Deco");
 
-        public static readonly MLibrary[] CArmours = new MLibrary[42],
+        public static readonly MLibrary[] CArmours = new MLibrary[99],
                                           CWeapons = new MLibrary[55],
 										  CWeaponEffect = new MLibrary[67],
 										  CHair = new MLibrary[9],
                                           CHumEffect = new MLibrary[6],
-                                          AArmours = new MLibrary[17],
+                                          AArmours = new MLibrary[99],
                                           AWeaponsL = new MLibrary[14],
                                           AWeaponsR = new MLibrary[14],
                                           AHair = new MLibrary[9],
                                           AHumEffect = new MLibrary[3],
-                                          ARArmours = new MLibrary[17],
+                                          ARArmours = new MLibrary[99],
                                           ARWeapons = new MLibrary[19],
                                           ARWeaponsS = new MLibrary[19],
                                           ARHair = new MLibrary[9],
@@ -73,7 +73,7 @@ namespace Client.MirGraphics
                                           Mounts = new MLibrary[12],
                                           NPCs = new MLibrary[200],
                                           Fishing = new MLibrary[2],
-                                          Pets = new MLibrary[14],
+                                          Pets = new MLibrary[15],
                                           Transform = new MLibrary[28],
                                           TransformMounts = new MLibrary[28],
                                           TransformEffect = new MLibrary[2],
@@ -507,7 +507,6 @@ namespace Client.MirGraphics
                 CurrentVersion = _reader.ReadInt32();
                 if (CurrentVersion != LibVersion)
                 {
-                    //cant use a directx based error popup cause it could be the lib file containing the interface is invalid :(
                     System.Windows.Forms.MessageBox.Show("Wrong version, expecting lib version: " + LibVersion.ToString() + " found version: " + CurrentVersion.ToString() + ".", _fileName, System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error, System.Windows.Forms.MessageBoxDefaultButton.Button1);
                     System.Windows.Forms.Application.Exit();
                     return;
@@ -624,7 +623,7 @@ namespace Client.MirGraphics
                 return;
 
 
-            DXManager.Sprite.Draw2D(mi.Image, Point.Empty, 0, new PointF(x, y), Color.White);
+            DXManager.Sprite.Draw(mi.Image, new Rectangle(0, 0, mi.Width, mi.Height), Vector3.Zero, new Vector3((float)x, (float)y, 0.0F), Color.White);
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
         public void Draw(int index, Point point, Color colour, bool offSet = false)
@@ -639,9 +638,7 @@ namespace Client.MirGraphics
             if (point.X >= Settings.ScreenWidth || point.Y >= Settings.ScreenHeight || point.X + mi.Width < 0 || point.Y + mi.Height < 0)
                 return;
 
-
-
-            DXManager.Sprite.Draw2D(mi.Image, Point.Empty, 0, point, colour);
+            DXManager.Sprite.Draw(mi.Image, new Rectangle(0, 0, mi.Width, mi.Height), Vector3.Zero, new Vector3((float)point.X, (float)point.Y, 0.0F), colour);
 
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
@@ -661,7 +658,8 @@ namespace Client.MirGraphics
             float oldOpacity = DXManager.Opacity;
             DXManager.SetOpacity(opacity);
 
-            DXManager.Sprite.Draw2D(mi.Image, Point.Empty, 0, point, colour);
+            DXManager.Sprite.Draw(mi.Image, new Rectangle(0, 0, mi.Width, mi.Height), Vector3.Zero, new Vector3((float)point.X, (float)point.Y, 0.0F), colour);
+
             DXManager.SetOpacity(oldOpacity);
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
@@ -681,7 +679,7 @@ namespace Client.MirGraphics
             bool oldBlend = DXManager.Blending;
             DXManager.SetBlend(true, rate);
 
-            DXManager.Sprite.Draw2D(mi.Image, Point.Empty, 0, point, colour);
+            DXManager.Sprite.Draw(mi.Image, new Rectangle(0, 0, mi.Width, mi.Height), Vector3.Zero, new Vector3((float)point.X, (float)point.Y, 0.0F), colour);
 
             DXManager.SetBlend(oldBlend);
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
@@ -705,7 +703,8 @@ namespace Client.MirGraphics
             if (section.Bottom > mi.Height)
                 section.Height -= section.Bottom - mi.Height;
 
-            DXManager.Sprite.Draw2D(mi.Image, section, section.Size, point, colour);
+            DXManager.Sprite.Draw(mi.Image, section, Vector3.Zero, new Vector3((float)point.X, (float)point.Y, 0.0F), colour);
+
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
         public void Draw(int index, Rectangle section, Point point, Color colour, float opacity)
@@ -728,7 +727,7 @@ namespace Client.MirGraphics
             float oldOpacity = DXManager.Opacity;
             DXManager.SetOpacity(opacity);
 
-            DXManager.Sprite.Draw2D(mi.Image, section, section.Size, point, colour);
+            DXManager.Sprite.Draw(mi.Image, section, Vector3.Zero, new Vector3((float)point.X, (float)point.Y, 0.0F), colour);
 
             DXManager.SetOpacity(oldOpacity);
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
@@ -743,7 +742,14 @@ namespace Client.MirGraphics
             if (point.X >= Settings.ScreenWidth || point.Y >= Settings.ScreenHeight || point.X + size.Width < 0 || point.Y + size.Height < 0)
                 return;
 
-            DXManager.Sprite.Draw2D(mi.Image, new Rectangle(Point.Empty, new Size(mi.Width, mi.Height)), size, point, colour);
+            float scaleX = (float)size.Width / mi.Width;
+            float scaleY = (float)size.Height / mi.Height;
+
+            Matrix matrix = Matrix.Scaling(scaleX, scaleY, 0);
+            DXManager.Sprite.Transform = matrix;
+            DXManager.Sprite.Draw(mi.Image, new Rectangle(0, 0, mi.Width, mi.Height), Vector3.Zero, new Vector3((float)point.X / scaleX, (float)point.Y / scaleY, 0.0F), Color.White);
+            DXManager.Sprite.Transform = Matrix.Identity;
+
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
 
@@ -758,11 +764,12 @@ namespace Client.MirGraphics
 
             if (point.X >= Settings.ScreenWidth || point.Y >= Settings.ScreenHeight || point.X + mi.Width < 0 || point.Y + mi.Height < 0)
                 return;
-            DXManager.Sprite.Draw2D(mi.Image, Point.Empty, 0, point, colour);
+
+            DXManager.Sprite.Draw(mi.Image, new Rectangle(0, 0, mi.Width, mi.Height), Vector3.Zero, new Vector3((float)point.X, (float)point.Y, 0.0F), colour);
 
             if (mi.HasMask)
             {
-                DXManager.Sprite.Draw2D(mi.MaskImage, Point.Empty, 0, point, Tint);
+                DXManager.Sprite.Draw(mi.MaskImage, new Rectangle(0, 0, mi.Width, mi.Height), Vector3.Zero, new Vector3((float)point.X, (float)point.Y, 0.0F), Tint);
             }
 
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
@@ -783,8 +790,7 @@ namespace Client.MirGraphics
             if (x + mi.Width < 0 || y + mi.Height < 0)
                 return;
 
-
-            DXManager.Sprite.Draw2D(mi.Image, Point.Empty, 0, new PointF(x, y), Color.White);
+            DXManager.Sprite.Draw(mi.Image, new Rectangle(0, 0, mi.Width, mi.Height), Vector3.Zero, new Vector3(x, y, 0.0F), Color.White);
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
         public void DrawUpBlend(int index, Point point)
@@ -803,7 +809,7 @@ namespace Client.MirGraphics
             bool oldBlend = DXManager.Blending;
             DXManager.SetBlend(true, 1);
 
-            DXManager.Sprite.Draw2D(mi.Image, Point.Empty, 0, point, Color.White);
+            DXManager.Sprite.Draw(mi.Image, new Rectangle(0, 0, mi.Width, mi.Height), Vector3.Zero, new Vector3((float)point.X, (float)point.Y, 0.0F), Color.White);
 
             DXManager.SetBlend(oldBlend);
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
@@ -905,17 +911,17 @@ namespace Client.MirGraphics
 
             int w = Width;// + (4 - Width % 4) % 4;
             int h = Height;// + (4 - Height % 4) % 4;
-            GraphicsStream stream = null;
+            DataRectangle stream = null;
 
             Image = new Texture(DXManager.Device, w, h, 1, Usage.None, Format.A8R8G8B8, Pool.Managed);
             stream = Image.LockRectangle(0, LockFlags.Discard);
-            Data = (byte*)stream.InternalDataPointer;
+            Data = (byte*)stream.Data.DataPointer;
 
             byte[] decomp = DecompressImage(reader.ReadBytes(Length));
 
-            stream.Write(decomp, 0, decomp.Length);
+            stream.Data.Write(decomp, 0, decomp.Length);
 
-            stream.Dispose();
+            stream.Data.Dispose();
             Image.UnlockRectangle(0);
 
             if (HasMask)
@@ -929,26 +935,38 @@ namespace Client.MirGraphics
 
                 decomp = DecompressImage(reader.ReadBytes(Length));
 
-                stream.Write(decomp, 0, decomp.Length);
+                stream.Data.Write(decomp, 0, decomp.Length);
 
-                stream.Dispose();
+                stream.Data.Dispose();
                 MaskImage.UnlockRectangle(0);
             }
 
             DXManager.TextureList.Add(this);
             TextureValid = true;
-            Image.Disposing += (o, e) =>
-            {
-                TextureValid = false;
-                Image = null;
-                MaskImage = null;
-                Data = null;
-                DXManager.TextureList.Remove(this);
-            };
-
 
             CleanTime = CMain.Time + Settings.CleanDelay;
         }
+
+        public unsafe void DisposeTexture()
+        {
+            DXManager.TextureList.Remove(this);
+
+            if (Image != null && !Image.Disposed)
+            {
+                Image.Dispose();
+            }
+
+            if (MaskImage != null && !MaskImage.Disposed)
+            {
+                MaskImage.Dispose();
+            }
+
+            TextureValid = false;
+            Image = null;
+            MaskImage = null;
+            Data = null;
+        }
+
         public unsafe bool VisiblePixel(Point p)
         {
             if (p.X < 0 || p.Y < 0 || p.X >= Width || p.Y >= Height)
