@@ -800,6 +800,10 @@ namespace Client.MirScenes.Dialogs
                     foreColour = Color.White;
                     GameScene.Scene.ChatNoticeDialog.ShowNotice(RegexFunctions.CleanChatString(text));
                     break;
+                case ChatType.LineMessage:
+                    backColour = Color.Blue;
+                    foreColour = Color.White;
+                    break;
                 case ChatType.Shout:
                     backColour = Color.Yellow;
                     foreColour = Color.Black;
@@ -907,6 +911,7 @@ namespace Client.MirScenes.Dialogs
                 switch (FullHistory[i].Type)
                 {
                     case ChatType.Normal:
+                    case ChatType.LineMessage:
                         if (Settings.FilterNormalChat) continue;
                         break;
                     case ChatType.WhisperIn:
@@ -914,6 +919,8 @@ namespace Client.MirScenes.Dialogs
                         if (Settings.FilterWhisperChat) continue;
                         break;
                     case ChatType.Shout:
+                    case ChatType.Shout2:
+                    case ChatType.Shout3:
                         if (Settings.FilterShoutChat) continue;
                         break;
                     case ChatType.System:
@@ -988,17 +995,30 @@ namespace Client.MirScenes.Dialogs
 
                 int oldLength = currentLine.Length;
 
+                Capture capture = null;
+
                 foreach (Match match in RegexFunctions.ChatItemLinks.Matches(currentLine).Cast<Match>().OrderBy(o => o.Index).ToList())
                 {
-                    int offSet = oldLength - currentLine.Length;
+                    try
+                    {
+                        int offSet = oldLength - currentLine.Length;
 
-                    Capture capture = match.Groups[1].Captures[0];
-                    string[] values = capture.Value.Split('/');
-                    currentLine = currentLine.Remove(capture.Index - 1 - offSet, capture.Length + 2).Insert(capture.Index - 1 - offSet, values[0]);
-                    string text = currentLine.Substring(0, capture.Index - 1 - offSet) + " ";
-                    Size size = TextRenderer.MeasureText(CMain.Graphics, text, temp.Font, temp.Size, TextFormatFlags.TextBoxControl);
+                        capture = match.Groups[1].Captures[0];
+                        string[] values = capture.Value.Split('/');
+                        currentLine = currentLine.Remove(capture.Index - 1 - offSet, capture.Length + 2).Insert(capture.Index - 1 - offSet, values[0]);
+                        string text = currentLine.Substring(0, capture.Index - 1 - offSet) + " ";
+                        Size size = TextRenderer.MeasureText(CMain.Graphics, text, temp.Font, temp.Size, TextFormatFlags.TextBoxControl);
 
-                    ChatLink(values[0], ulong.Parse(values[1]), temp.Location.Add(new Point(size.Width - 10, 0)));
+                        ChatLink(values[0], ulong.Parse(values[1]), temp.Location.Add(new Point(size.Width - 10, 0)));
+                    }
+                    catch(Exception ex)
+                    {
+						//Temporary debug to catch unknown error
+                        CMain.SaveError(ex.ToString());
+                        CMain.SaveError(currentLine);
+                        CMain.SaveError(capture.Value);
+                        throw;
+                    }
                 }
 
                 temp.Text = currentLine;

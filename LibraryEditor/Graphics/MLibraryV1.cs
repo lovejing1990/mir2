@@ -1,23 +1,28 @@
-﻿using System;
+﻿using ManagedSquish;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
-using System.IO.Compression;
 using System.Runtime.InteropServices;
-using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace LibraryViewer
+namespace LibraryEditor
 {
-    public sealed class MLibraryV2
+    /// <summary>
+    /// V1 Library
+    /// Uses DXT1 Images
+    /// </summary>
+    public sealed class MLibraryV1
     {
-        public const int LibVersion = 2;
+        public const int LibVersion = 1;
         public static bool Load = true;
         public string FileName;
-
+        
         public List<MImage> Images = new List<MImage>();
+
         public List<int> IndexList = new List<int>();
         public int Count;
         private bool _initialized;
@@ -25,7 +30,7 @@ namespace LibraryViewer
         private BinaryReader _reader;
         private FileStream _stream;
 
-        public MLibraryV2(string filename)
+        public MLibraryV1(string filename)
         {
             FileName = filename;
             Initialize();
@@ -46,7 +51,6 @@ namespace LibraryViewer
             if (CurrentVersion != LibVersion)
             {
                 MessageBox.Show("Wrong version, expecting lib version: " + LibVersion.ToString() + " found version: " + CurrentVersion.ToString() + ".", "Failed to open", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
-                Program.LoadFailed = true;
                 return;
             }
             Count = _reader.ReadInt32();
@@ -86,7 +90,6 @@ namespace LibraryViewer
             {
                 IndexList.Add((int)stream.Length + offSet);
                 Images[i].Save(writer);
-                //Images[i] = null;
             }
 
             writer.Flush();
@@ -129,6 +132,52 @@ namespace LibraryViewer
                 _stream.Seek(IndexList[index] + 12, SeekOrigin.Begin);
                 mi.CreateTexture(_reader);
             }
+        }
+
+        public void ToMLibrary()
+        {
+            string fileName = Path.ChangeExtension(FileName, ".Lib");
+
+            string file = Path.GetFileNameWithoutExtension(fileName);
+            fileName = fileName.Replace(file, file + "-converted");
+
+            if (File.Exists(fileName))
+                File.Delete(fileName);
+
+            MLibraryV2 library = new MLibraryV2(fileName) { Images = new List<MLibraryV2.MImage>(), IndexList = new List<int>(), Count = Images.Count };
+            //library.Save();
+
+            for (int i = 0; i < library.Count; i++)
+                library.Images.Add(null);
+
+            ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 8 };
+
+            try
+            {
+                Parallel.For(0, Images.Count, options, i =>
+                {
+                    MImage image = Images[i];
+                    if (image.HasMask)
+                        library.Images[i] = new MLibraryV2.MImage(image.Image, image.MaskImage) { X = image.X, Y = image.Y, ShadowX = image.ShadowX, ShadowY = image.ShadowY, Shadow = image.Shadow, MaskX = image.X, MaskY = image.Y };
+                    else
+                        library.Images[i] = new MLibraryV2.MImage(image.Image) { X = image.X, Y = image.Y, ShadowX = image.ShadowX, ShadowY = image.ShadowY, Shadow = image.Shadow };
+                });
+            }
+            catch (System.Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                library.Save();
+            }
+
+            // Operation finished.
+            // System.Windows.Forms.MessageBox.Show("Converted " + fileName + " successfully.",
+            //    "Wemade Information",
+            //        System.Windows.Forms.MessageBoxButtons.OK,
+            //            System.Windows.Forms.MessageBoxIcon.Information,
+            //                System.Windows.Forms.MessageBoxDefaultButton.Button1);
         }
 
         public Point GetOffSet(int index)
@@ -239,7 +288,7 @@ namespace LibraryViewer
         {
             for (int i = Count - 1; i >= 0; i--)
             {
-                if (Images[i].FBytes == null || Images[i].FBytes.Length <= 24)
+                if (Images[i].FBytes == null || Images[i].FBytes.Length <= 8)
                 {
                     if (!safe)
                         RemoveImage(i);
@@ -309,7 +358,7 @@ namespace LibraryViewer
                 Width = (short)image.Width;
                 Height = (short)image.Height;
 
-                Image = image;// FixImageSize(image);
+                Image = FixImageSize(image);
                 FBytes = ConvertBitmapToArray(Image);
             }
 
@@ -323,7 +372,7 @@ namespace LibraryViewer
 
                 Width = (short)image.Width;
                 Height = (short)image.Height;
-                Image = image;// FixImageSize(image);
+                Image = FixImageSize(image);
                 FBytes = ConvertBitmapToArray(Image);
                 if (Maskimage == null)
                 {
@@ -333,7 +382,7 @@ namespace LibraryViewer
                 HasMask = true;
                 MaskWidth = (short)Maskimage.Width;
                 MaskHeight = (short)Maskimage.Height;
-                MaskImage = Maskimage;// FixImageSize(Maskimage);
+                MaskImage = FixImageSize(Maskimage);
                 MaskFBytes = ConvertBitmapToArray(MaskImage);
             }
 
@@ -361,79 +410,37 @@ namespace LibraryViewer
 
             private unsafe byte[] ConvertBitmapToArray(Bitmap input)
             {
+                byte[] output;
+
                 BitmapData data = input.LockBits(new Rectangle(0, 0, input.Width, input.Height), ImageLockMode.ReadOnly,
                                                  PixelFormat.Format32bppArgb);
 
                 byte[] pixels = new byte[input.Width * input.Height * 4];
 
                 Marshal.Copy(data.Scan0, pixels, 0, pixels.Length);
-
                 input.UnlockBits(data);
 
                 for (int i = 0; i < pixels.Length; i += 4)
                 {
+                    //Reverse Red/Blue
+                    byte b = pixels[i];
+                    pixels[i] = pixels[i + 2];
+                    pixels[i + 2] = b;
+
                     if (pixels[i] == 0 && pixels[i + 1] == 0 && pixels[i + 2] == 0)
                         pixels[i + 3] = 0; //Make Transparent
                 }
 
-                byte[] compressedBytes;
-                compressedBytes = Compress(pixels);
+                int count = Squish.GetStorageRequirements(input.Width, input.Height, SquishFlags.Dxt1);
 
-                return compressedBytes;
-            }
-
-            public unsafe void CreateTexture(BinaryReader reader)
-            {
-                int w = Width;// +(4 - Width % 4) % 4;
-                int h = Height;// +(4 - Height % 4) % 4;
-
-                if (w == 0 || h == 0)
-                    return;
-
-                Image = new Bitmap(w, h);
-
-                BitmapData data = Image.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadWrite,
-                                                 PixelFormat.Format32bppArgb);
-
-                byte[] dest = Decompress(FBytes);
-
-                Marshal.Copy(dest, 0, data.Scan0, dest.Length);
-
-                Image.UnlockBits(data);
-
-                //if (Image.Width > 0 && Image.Height > 0)
-                //{
-                //    Guid id = Guid.NewGuid();
-                //    Image.Save(id + ".bmp", ImageFormat.Bmp);
-                //}
-
-                dest = null;
-
-                if (HasMask)
+                output = new byte[count];
+                fixed (byte* dest = output)
+                fixed (byte* source = pixels)
                 {
-                    w = MaskWidth;// +(4 - MaskWidth % 4) % 4;
-                    h = MaskHeight;// +(4 - MaskHeight % 4) % 4;
-
-                    if (w == 0 || h == 0)
-                    {
-                        return;
-                    }
-
-                    MaskImage = new Bitmap(w, h);
-
-                    data = MaskImage.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadWrite,
-                                                     PixelFormat.Format32bppArgb);
-
-                    dest = Decompress(MaskFBytes);
-
-                    Marshal.Copy(dest, 0, data.Scan0, dest.Length);
-
-                    Image.UnlockBits(data);
+                    Squish.CompressImage((IntPtr)source, input.Width, input.Height, (IntPtr)dest, SquishFlags.Dxt1);
                 }
-
-                dest = null;
+                return output;
             }
-
 
             public void Save(BinaryWriter writer)
             {
@@ -457,41 +464,64 @@ namespace LibraryViewer
                 }
             }
 
-            public static byte[] Compress(byte[] raw)
+            public unsafe void CreateTexture(BinaryReader reader)
             {
-                using (MemoryStream memory = new MemoryStream())
-                {
-                    using (GZipStream gzip = new GZipStream(memory,
-                    CompressionMode.Compress, true))
-                    {
-                        gzip.Write(raw, 0, raw.Length);
-                    }
-                    return memory.ToArray();
-                }
-            }
+                int w = Width + (4 - Width % 4) % 4;
+                int h = Height + (4 - Height % 4) % 4;
 
-            static byte[] Decompress(byte[] gzip)
-            {
-                // Create a GZIP stream with decompression mode.
-                // ... Then create a buffer and write into while reading from the GZIP stream.
-                using (GZipStream stream = new GZipStream(new MemoryStream(gzip), CompressionMode.Decompress))
+                if (w == 0 || h == 0)
                 {
-                    const int size = 4096;
-                    byte[] buffer = new byte[size];
-                    using (MemoryStream memory = new MemoryStream())
+                    return;
+                }
+
+                Image = new Bitmap(w, h);
+
+                BitmapData data = Image.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadWrite,
+                                                 PixelFormat.Format32bppArgb);
+
+                fixed (byte* source = FBytes)
+                    Squish.DecompressImage(data.Scan0, w, h, (IntPtr)source, SquishFlags.Dxt1);
+
+                byte* dest = (byte*)data.Scan0;
+
+                for (int i = 0; i < h * w * 4; i += 4)
+                {
+                    //Reverse Red/Blue
+                    byte b = dest[i];
+                    dest[i] = dest[i + 2];
+                    dest[i + 2] = b;
+                }
+
+                Image.UnlockBits(data);
+
+                if (HasMask)
+                {
+                    w = MaskWidth + (4 - MaskWidth % 4) % 4;
+                    h = MaskHeight + (4 - MaskHeight % 4) % 4;
+
+                    if (w == 0 || h == 0)
                     {
-                        int count = 0;
-                        do
-                        {
-                            count = stream.Read(buffer, 0, size);
-                            if (count > 0)
-                            {
-                                memory.Write(buffer, 0, count);
-                            }
-                        }
-                        while (count > 0);
-                        return memory.ToArray();
+                        return;
                     }
+                    MaskImage = new Bitmap(w, h);
+
+                    data = MaskImage.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadWrite,
+                                                     PixelFormat.Format32bppArgb);
+
+                    fixed (byte* source = MaskFBytes)
+                        Squish.DecompressImage(data.Scan0, w, h, (IntPtr)source, SquishFlags.Dxt1);
+
+                    dest = (byte*)data.Scan0;
+
+                    for (int i = 0; i < h * w * 4; i += 4)
+                    {
+                        //Reverse Red/Blue
+                        byte b = dest[i];
+                        dest[i] = dest[i + 2];
+                        dest[i + 2] = b;
+                    }
+
+                    MaskImage.UnlockBits(data);
                 }
             }
 
@@ -507,7 +537,7 @@ namespace LibraryViewer
 
                 using (Graphics g = Graphics.FromImage(Preview))
                 {
-                    g.InterpolationMode = InterpolationMode.Low;//HighQualityBicubic
+                    g.InterpolationMode = InterpolationMode.NearestNeighbor;//HighQualityBicubic
                     g.Clear(Color.Transparent);
                     int w = Math.Min((int)Width, 64);
                     int h = Math.Min((int)Height, 64);

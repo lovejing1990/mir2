@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using Server.MirDatabase;
+using Server.MirObjects;
 
 namespace Server
 {
@@ -29,13 +30,11 @@ namespace Server
             RoutePath = Path.Combine(EnvirPath, "Routes"),
             NameListPath = Path.Combine(EnvirPath, "NameLists"),
             ValuePath = Path.Combine(EnvirPath, "Values"),
-            ReportPath = Path.Combine(".", "Reports"),
-            LogPath = Path.Combine(".", "Logs"),
-            ErrorPath = Path.Combine(LogPath, "Errors");
-
+            NoticePath = Path.Combine(EnvirPath, "Notice.txt");
 
         private static readonly InIReader Reader = new InIReader(Path.Combine(ConfigPath, "Setup.ini"));
 
+        public static Notice Notice;
 
         //General
         public static string VersionPath = Path.Combine(".", "Mir2.Exe");
@@ -87,6 +86,7 @@ namespace Server
                            GameMasterEffect = false,
                            GatherOrbsPerLevel = true,
                            ExpMobLevelDifference = true;
+        public static int LineMessageTimer = 10;
 
         //Database
         public static int SaveDelay = 5;
@@ -226,7 +226,7 @@ namespace Server
 
 
         //character settings
-        private static String[] BaseStatClassNames = { "Warrior", "Wizard", "Taoist", "Assassin", "Archer" };
+        private static readonly String[] BaseStatClassNames = { "Warrior", "Wizard", "Taoist", "Assassin", "Archer" };
         public static BaseStats[] ClassBaseStats = new BaseStats[5] { new BaseStats(MirClass.Warrior), new BaseStats(MirClass.Wizard), new BaseStats(MirClass.Taoist), new BaseStats(MirClass.Assassin), new BaseStats(MirClass.Archer) };
         public static List<RandomItemStat> RandomItemStatsList = new List<RandomItemStat>();
         public static List<MineSet> MineSetList = new List<MineSet>();
@@ -333,6 +333,7 @@ namespace Server
             GatherOrbsPerLevel = Reader.ReadBoolean("Optional", "GatherOrbsPerLevel", GatherOrbsPerLevel);
             ExpMobLevelDifference = Reader.ReadBoolean("Optional", "ExpMobLevelDifference", ExpMobLevelDifference);
             GameMasterEffect = Reader.ReadBoolean("Optional", "GameMasterEffect", GameMasterEffect);
+            LineMessageTimer = Reader.ReadInt32("Optional", "LineMessageTimer", LineMessageTimer);
 
             //Database
             SaveDelay = Reader.ReadInt32("Database", "SaveDelay", SaveDelay);
@@ -455,16 +456,9 @@ namespace Server
             if (!Directory.Exists(ExportPath))
                 Directory.CreateDirectory(ExportPath);
             if (!Directory.Exists(RoutePath))
-                Directory.CreateDirectory(RoutePath);
-            
+                Directory.CreateDirectory(RoutePath);         
             if (!Directory.Exists(NameListPath))
                 Directory.CreateDirectory(NameListPath);
-            if (!Directory.Exists(LogPath))
-                Directory.CreateDirectory(LogPath);
-            if (!Directory.Exists(ErrorPath))
-                Directory.CreateDirectory(ErrorPath);
-            if (!Directory.Exists(ReportPath))
-                Directory.CreateDirectory(ReportPath);
             if (!Directory.Exists(RecipePath))
                 Directory.CreateDirectory(RecipePath);
 
@@ -506,9 +500,46 @@ namespace Server
             LoadMentor();
             LoadGoods();
             LoadGem();
-            //Languahe
+            LoadNotice();
+
             GameLanguage.LoadServerLanguage(Path.Combine(ConfigPath, "Language.ini"));
         }
+
+        public static void LoadNotice()
+        {
+            Notice = new Notice();
+
+            if (!File.Exists(NoticePath))
+            {
+                FileStream NewFile = File.Create(NoticePath);
+                NewFile.Close();
+            }
+
+            var lines = File.ReadAllLines(NoticePath);
+
+            if (lines.Length == 0)
+            {
+                return;
+            }
+
+            Notice.LastUpdate = File.GetLastWriteTime(NoticePath);
+
+            var links = new List<string>();
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+
+                if (string.Compare(line, "TITLE", false) > 0 && line.Contains("="))
+                {
+                    Notice.Title = line.Split('=')[1];
+                    continue;
+                }
+
+                Notice.Message += line + "\r\n";
+            }
+        }
+
         public static void Save()
         {
             //General
@@ -549,6 +580,7 @@ namespace Server
             Reader.Write("Optional", "GatherOrbsPerLevel", GatherOrbsPerLevel);
             Reader.Write("Optional", "ExpMobLevelDifference", ExpMobLevelDifference);
             Reader.Write("Optional", "GameMasterEffect", GameMasterEffect);
+            Reader.Write("Optional", "LineMessageTimer", LineMessageTimer);
 
             //Database
             Reader.Write("Database", "SaveDelay", SaveDelay);
@@ -1054,7 +1086,7 @@ namespace Server
             reader.Write("Guilds", "WarTime", Guild_WarTime);
             reader.Write("Guilds", "WarCost", Guild_WarCost);
 
-            int i = 0;
+            int i;
             for (i = 0; i < Guild_ExperienceList.Count; i++)
             {
                 reader.Write("Exp", "Level-" + i.ToString(), Guild_ExperienceList[i]);

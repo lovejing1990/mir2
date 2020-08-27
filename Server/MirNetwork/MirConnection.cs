@@ -51,6 +51,7 @@ namespace Server.MirNetwork
         public long TimeDisconnected, TimeOutTime;
 
         byte[] _rawData = new byte[0];
+        byte[] _rawBytes = new byte[8 * 1024];
 
         public AccountInfo Account;
         public PlayerObject Player;
@@ -105,11 +106,9 @@ namespace Server.MirNetwork
         {
             if (!Connected) return;
 
-            byte[] rawBytes = new byte[8 * 1024];
-
             try
             {
-                _client.Client.BeginReceive(rawBytes, 0, rawBytes.Length, SocketFlags.None, ReceiveData, rawBytes);
+                _client.Client.BeginReceive(_rawBytes, 0, _rawBytes.Length, SocketFlags.None, ReceiveData, _rawBytes);
             }
             catch
             {
@@ -846,7 +845,7 @@ namespace Server.MirNetwork
             info.BanReason = string.Empty;
             info.ExpiryDate = DateTime.MinValue;
 
-            long delay = (long) (Envir.Now - info.LastDate).TotalMilliseconds;
+            long delay = (long) (Envir.Now - info.LastLogoutDate).TotalMilliseconds;
 
 
             //if (delay < Settings.RelogDelay)

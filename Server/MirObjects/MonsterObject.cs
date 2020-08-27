@@ -1219,6 +1219,9 @@ namespace Server.MirObjects
 
                 Buffs.RemoveAt(i);
 
+                if (buff.Visible)
+                    Broadcast(new S.RemoveBuff { Type = buff.Type, ObjectID = ObjectID });
+
                 switch (buff.Type)
                 {
                     case BuffType.MoonLight:
@@ -1850,7 +1853,7 @@ namespace Server.MirObjects
             }
             else if (attacker.Info.AI == 58) // Tao Guard - attacks Pets
             {
-                if (Info.AI != 1 && Info.AI != 2 && Info.AI != 3) //Not Dear/Hen/Tree
+                if (Info.AI != 1 && Info.AI != 2 && Info.AI != 3 && (Master == null || Master.AMode != AttackMode.Peace)) //Not Dear/Hen/Tree or Peaceful Master
                     return true;
             }
             else if (Master != null) //Pet Attacked
@@ -2226,8 +2229,9 @@ namespace Server.MirObjects
                     Poison = CurrentPoison,
                     Hidden = Hidden,
                     ShockTime = (ShockTime > 0 ? ShockTime - Envir.Time : 0),
-                    BindingShotCenter = BindingShotCenter
-                };
+                    BindingShotCenter = BindingShotCenter,
+                    Buffs = Buffs.Where(d => d.Visible).Select(e => e.Type).ToList()
+            };
         }
 
         public override void ReceiveChat(string text, ChatType type)

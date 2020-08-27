@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace ClientPackets
 {
@@ -1950,7 +1950,7 @@ public sealed class AwakeningNeedMaterials : Packet
         }
     }
 
-    public sealed class IntelligentCreaturePickup : Packet//IntelligentCreature
+    public sealed class IntelligentCreaturePickup : Packet
     {
         public override short Index { get { return (short)ClientPacketIds.IntelligentCreaturePickup; } }
 

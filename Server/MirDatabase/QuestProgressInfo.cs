@@ -77,12 +77,9 @@ namespace Server.MirDatabase
             for (int i = 0; i < count; i++)
                 ItemTaskCount.Add(reader.ReadInt64());
 
-            if (Envir.LoadVersion >= 37)
-            {
-                count = reader.ReadInt32();
-                for (int i = 0; i < count; i++)
-                    FlagTaskSet.Add(reader.ReadBoolean());
-            }
+            count = reader.ReadInt32();
+            for (int i = 0; i < count; i++)
+                FlagTaskSet.Add(reader.ReadBoolean());
         }
 
         public void Save(BinaryWriter writer)
@@ -317,7 +314,7 @@ namespace Server.MirDatabase
             for (int i = 0; i < Info.ItemTasks.Count; i++)
             {
                 if (string.IsNullOrEmpty(Info.ItemTasks[i].Message))
-                    TaskList.Add(string.Format("Collect {0}: {1}/{2} {3}", Info.ItemTasks[i].Item.Name, ItemTaskCount[i],
+                    TaskList.Add(string.Format("Collect {0}: {1}/{2} {3}", Info.ItemTasks[i].Item.FriendlyName, ItemTaskCount[i],
                         Info.ItemTasks[i].Count, ItemTaskCount[i] >= Info.ItemTasks[i].Count ? "(Completed)" : ""));
                 else
                     TaskList.Add(string.Format("{0} {1}", Info.ItemTasks[i].Message, ItemTaskCount[i] >= Info.ItemTasks[i].Count ? "(Completed)" : ""));

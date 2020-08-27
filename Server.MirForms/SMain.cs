@@ -299,7 +299,7 @@ namespace Server
 
         private void PlayersOnlineListView_DoubleClick(object sender, EventArgs e)
         {
-            ListViewNF list = (ListViewNF)sender;
+            CustomFormControl.ListViewNF list = (CustomFormControl.ListViewNF)sender;
 
             if (list.SelectedItems.Count > 0)
             {
@@ -361,8 +361,13 @@ namespace Server
 
         private void SMain_Load(object sender, EventArgs e)
         {
-            EditEnvir.LoadDB();
-            Envir.Start();
+            var loaded = EditEnvir.LoadDB();
+
+            if (loaded)
+            {
+                Envir.Start();
+            }
+
             AutoResize();
         }
 

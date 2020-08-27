@@ -1927,6 +1927,8 @@ namespace ServerPackets
         public long ShockTime;
         public bool BindingShotCenter;
 
+        public List<BuffType> Buffs = new List<BuffType>();
+
         protected override void ReadPacket(BinaryReader reader)
         {
             ObjectID = reader.ReadUInt32();
@@ -1946,6 +1948,12 @@ namespace ServerPackets
             BindingShotCenter = reader.ReadBoolean();
             Extra = reader.ReadBoolean();
             ExtraByte = reader.ReadByte();
+
+            int count = reader.ReadInt32();
+            for (int i = 0; i < count; i++)
+            {
+                Buffs.Add((BuffType)reader.ReadByte());
+            }
         }
 
         protected override void WritePacket(BinaryWriter writer)
@@ -1968,6 +1976,12 @@ namespace ServerPackets
             writer.Write(BindingShotCenter);
             writer.Write(Extra);
             writer.Write((byte)ExtraByte);
+
+            writer.Write(Buffs.Count);
+            for (int i = 0; i < Buffs.Count; i++)
+            {
+                writer.Write((byte)Buffs[i]);
+            }
         }
 
     }
@@ -3966,9 +3980,11 @@ namespace ServerPackets
             From = reader.ReadInt32();
             User = reader.ReadInt32();
             if (!reader.ReadBoolean()) return;
-            Item = new GuildStorageItem();
-            Item.UserId = reader.ReadInt64();
-            Item.Item = new UserItem(reader);
+            Item = new GuildStorageItem
+            {
+                UserId = reader.ReadInt64(),
+                Item = new UserItem(reader)
+            };
         }
         protected override void WritePacket(BinaryWriter writer)
         {
@@ -5178,6 +5194,7 @@ namespace ServerPackets
 
         public List<UserItem> List = new List<UserItem>();
         public float Rate;
+        public PanelType Type;
 
         protected override void ReadPacket(BinaryReader reader)
         {
@@ -5187,6 +5204,8 @@ namespace ServerPackets
                 List.Add(new UserItem(reader));
 
             Rate = reader.ReadSingle();
+
+            Type = (PanelType)reader.ReadByte();
         }
         protected override void WritePacket(BinaryWriter writer)
         {
@@ -5196,6 +5215,7 @@ namespace ServerPackets
                 List[i].Save(writer);
 
             writer.Write(Rate);
+            writer.Write((byte)Type);
         }
     }
 
@@ -5703,6 +5723,64 @@ namespace ServerPackets
         protected override void WritePacket(BinaryWriter writer)
         {
             writer.Write(Sound);
+        }
+    }
+
+    public sealed class SetTimer : Packet
+    {
+        public override short Index { get { return (short)ServerPacketIds.SetTimer; } }
+
+        public string Key;
+        public byte Type;
+        public int Seconds;
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            Key = reader.ReadString();
+            Type = reader.ReadByte();
+            Seconds = reader.ReadInt32();
+        }
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(Key);
+            writer.Write(Type);
+            writer.Write(Seconds);
+        }
+    }
+
+    public sealed class ExpireTimer : Packet
+    {
+        public override short Index { get { return (short)ServerPacketIds.ExpireTimer; } }
+
+        public string Key;
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            Key = reader.ReadString();
+        }
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(Key);
+        }
+    }
+
+    public sealed class UpdateNotice : Packet
+    {
+        public override short Index
+        {
+            get { return (short)ServerPacketIds.UpdateNotice; }
+        }
+
+        public Notice Notice = new Notice();
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            Notice = new Notice(reader);
+        }
+
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            Notice.Save(writer);
         }
     }
 }
